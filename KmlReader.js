@@ -21,39 +21,39 @@
  * 
  */
 var KmlReader = new Class({
-    options: {
-        /** markerParams=[name, description, coordinates, icon, data]; xmlSnippet=xmlNode*/
-        markerTransform: function(markerParams, xmlSnippet) {
-            return markerParams;
-        },
-        /** polygonParams=[name, description, coordinates, lineWidth, lineColor, lineOpacity, fillColor, fillOpacity]; xmlSnippet=xmlNode*/
-        polygonTransform: function(polygonParams, xmlSnippet) {
-            return polygonParams;
-        },
-        /** lineParams=[name, description, coordinates, lineWidth, lineColor, lineOpacity]; xmlSnippet=xmlNode*/
-        lineTransform: function(lineParams, xmlSnippet) {
-            return lineParams;
-        },
-        groundOverlayTransform: function(overlayParams, xmlSnippet) {
-            return overlayParams;
-        },
-        /** folderParams=[name, description, markers, polygons, lines, networklinks, data]; xmlSnippet=xmlNode*/
-        folderTransform: function(folderParams, xmlSnippet) {
-            return folderParams;
-        },
-        /** networklinkParams=[name, description, url, data]; xmlSnippet=xmlNode*/
-        networklinkTransform: function(networklinkParams, xmlSnippet) {
+  
+    initialize: function(kml) {
 
-            return networklinkParams;
-        },
-        /** documentParams=[name, description, folders, markers, polygons, lines, networklinks, data]; xmlSnippet=xmlNode*/
-        documentTransform: function(documentParams, xmlSnippet) {
+        var me = this;
 
-            return documentParams;
+        if((typeof kml)=='string'){
+
+            var parseXml;
+
+            if (window.DOMParser) {
+                parseXml = function(xmlStr) {
+                    return ( new window.DOMParser() ).parseFromString(xmlStr, "text/xml");
+                };
+            } else if (typeof window.ActiveXObject != "undefined" && new window.ActiveXObject("Microsoft.XMLDOM")) {
+                parseXml = function(xmlStr) {
+                    var xmlDoc = new window.ActiveXObject("Microsoft.XMLDOM");
+                    xmlDoc.async = "false";
+                    xmlDoc.loadXML(xmlStr);
+                    return xmlDoc;
+                };
+            } else {
+                parseXml = function() { return null; }
+            }
+
+            kml = parseXml(layer);
+
         }
-    },
-    initialize: function(options) {
 
+        me._kml=kml;
+
+
+
+        //replaces console.log which is not supported accross all browsers
         if (!window.JSConsoleWarn) {
             window.JSConsoleWarn = function() {};
         }
@@ -61,73 +61,91 @@ var KmlReader = new Class({
             window.JSConsoleError = function() {};
         }
 
-
-        var me = this;
-        me.setOptions(options);
     },
-    parseDocuments: function(snippet) {
+    parseDocuments: function(kml, callback) {
         var me = this;
-        var documents = [];
-        var documentData = me._filter(KmlReader.ParseDomDocuments(snippet));
+        if(!callback){
+            callback=kml;
+            kml=me._kml;
+        }
+        
+        var documentData = me._filter(KmlReader.ParseDomDocuments(kml));
         Array.each(documentData, function(p, i) {
-            documents.push(me.options.documentTransform(p, snippet, documentData, i));
+            callback(p, kml, documentData, i);
         });
-        return documents;
+        return me;
     },
-    parseFolders: function(snippet) {
+    parseFolders: function(kml, callback) {
         var me = this;
-        var folders = [];
-        var folderData = me._filter(KmlReader.ParseDomFolders(snippet));
+        if(!callback){
+            callback=kml;
+            kml=me._kml;
+        }
+        var folderData = me._filter(KmlReader.ParseDomFolders(kml));
         Array.each(folderData, function(p, i) {
-            folders.push(me.options.folderTransform(p, snippet, folderData, i));
+            callback(p, kml, folderData, i);
         });
-        return folders;
+        return me;
     },
-    parseMarkers: function(snippet) {
+    parseMarkers: function(kml, callback) {
         var me = this;
-        var markers = [];
-        var markerData = me._filter(KmlReader.ParseDomMarkers(snippet));
+        if(!callback){
+            callback=kml;
+            kml=me._kml;
+        }
+        var markerData = me._filter(KmlReader.ParseDomMarkers(kml));
         Array.each(markerData, function(p, i) {
-            markers.push(me.options.markerTransform(p, snippet, markerData, i));
+            callback(p, kml, markerData, i);
         });
-        return markers;
+        return me;
     },
-    parsePolygons: function(snippet) {
+    parsePolygons: function(kml, callback) {
         var me = this;
-        var polygons = [];
-
-        var polygonData = me._filter(KmlReader.ParseDomPolygons(snippet));
+        if(!callback){
+            callback=kml;
+            kml=me._kml;
+        }
+        var polygonData = me._filter(KmlReader.ParseDomPolygons(kml));
         Array.each(polygonData, function(p, i) {
-            polygons.push(me.options.polygonTransform(p, snippet, polygonData, i));
+            callback(p, kml, polygonData, i);
         });
-        return polygons;
+        return me;
     },
-    parseLines: function(snippet) {
+    parseLines: function(kml, callback) {
         var me = this;
-        var lines = [];
-        var lineData = me._filter(KmlReader.ParseDomLines(snippet));
+        if(!callback){
+            callback=kml;
+            kml=me._kml;
+        }
+        var lineData = me._filter(KmlReader.ParseDomLines(kml));
         Array.each(lineData, function(p, i) {
-            lines.push(me.options.lineTransform(p, snippet, lineData, i));
+            callback(p, kml, lineData, i);
         });
-        return lines;
+        return me;
     },
-    parseGroundOverlays: function(snippet) {
+    parseGroundOverlays: function(kml, callback) {
         var me = this;
-        var groundOverlays = [];
-        var overlayData = me._filter(KmlReader.ParseDomGroundOverlays(snippet));
+        if(!callback){
+            callback=kml;
+            kml=me._kml;
+        }
+        var overlayData = me._filter(KmlReader.ParseDomGroundOverlays(kml));
         Array.each(overlayData, function(o, i) {
-            groundOverlays.push(me.options.groundOverlayTransform(o, snippet, overlayData, i));
+            callback(o, kml, overlayData, i);
         });
-        return groundOverlays;
+        return me;
     },
-    parseNetworklinks: function(snippet) {
+    parseNetworklinks: function(kml, callback) {
         var me = this;
-        var links = [];
-        var linkData = me._filter(KmlReader.ParseDomLinks(snippet));
+        if(!callback){
+            callback=kml;
+            kml=me._kml;
+        }
+        var linkData = me._filter(KmlReader.ParseDomLinks(kml));
         Array.each(linkData, function(p, i) {
-            links.push(me.options.networklinkTransform(p, snippet, linkData, i));
+            callback(p, kml, linkData, i);
         });
-        return links;
+        return me;
     },
     _filter: function(a) {
         var me = this;
