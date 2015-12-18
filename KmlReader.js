@@ -45,7 +45,7 @@ var KmlReader = new Class({
                 parseXml = function() { return null; }
             }
 
-            kml = parseXml(layer);
+            kml = parseXml(kml);
 
         }
 
@@ -135,7 +135,7 @@ var KmlReader = new Class({
         });
         return me;
     },
-    parseNetworklinks: function(kml, callback) {
+    parseNetworklinks: function(kml,callback) {
         var me = this;
         if(!callback){
             callback=kml;
