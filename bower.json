@@ -1,0 +1,23 @@
+{
+  "name": "js-simplekml",
+  "homepage": "https://github.com/nickolanack/js-simplekml",
+  "authors": [
+    "nickolanack <nickblackwell82@gmail.com>"
+  ],
+  "description": "A Kml Reader",
+  "main": "KmlReader.js",
+  "moduleType": [],
+  "keywords": [
+    "kml",
+    "google",
+    "maps"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
