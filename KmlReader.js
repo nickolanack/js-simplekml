@@ -1,15 +1,10 @@
 /**
- * File - SimpleKml.js
- * Package - Geolive. http://www.geolive.ca
- * Created - Dec 18 09
  * Author - Nick Blackwell
  * 
- * License - Geolive by Nicholas Blackwell is licensed under a Creative Commons Attribution-NoDerivs 3.0 Unported License.
+ * License - MIT
  *
  * Description - Defines a class, KmlReader which is a container for static kml parsing methods. 
- * This kml parser assumes Mootools and GoogleMaps API are available.
  * 
- * Dependencies - GoogleMaps API, Mootools 1.11, JSConsole.js (specifically JSConsole method)
  */
 
 /**
@@ -21,18 +16,18 @@
  * 
  */
 var KmlReader = new Class({
-  
+
     initialize: function(kml) {
 
         var me = this;
 
-        if((typeof kml)=='string'){
+        if ((typeof kml) == 'string') {
 
             var parseXml;
 
             if (window.DOMParser) {
                 parseXml = function(xmlStr) {
-                    return ( new window.DOMParser() ).parseFromString(xmlStr, "text/xml");
+                    return (new window.DOMParser()).parseFromString(xmlStr, "text/xml");
                 };
             } else if (typeof window.ActiveXObject != "undefined" && new window.ActiveXObject("Microsoft.XMLDOM")) {
                 parseXml = function(xmlStr) {
@@ -42,14 +37,16 @@ var KmlReader = new Class({
                     return xmlDoc;
                 };
             } else {
-                parseXml = function() { return null; }
+                parseXml = function() {
+                    return null;
+                }
             }
 
             kml = parseXml(kml);
 
         }
 
-        me._kml=kml;
+        me._kml = kml;
 
 
 
@@ -64,11 +61,11 @@ var KmlReader = new Class({
     },
     parseDocuments: function(kml, callback) {
         var me = this;
-        if(!callback){
-            callback=kml;
-            kml=me._kml;
+        if (!callback) {
+            callback = kml;
+            kml = me._kml;
         }
-        
+
         var documentData = me._filter(KmlReader.ParseDomDocuments(kml));
         Array.each(documentData, function(p, i) {
             callback(p, kml, documentData, i);
@@ -77,9 +74,9 @@ var KmlReader = new Class({
     },
     parseFolders: function(kml, callback) {
         var me = this;
-        if(!callback){
-            callback=kml;
-            kml=me._kml;
+        if (!callback) {
+            callback = kml;
+            kml = me._kml;
         }
         var folderData = me._filter(KmlReader.ParseDomFolders(kml));
         Array.each(folderData, function(p, i) {
@@ -89,9 +86,9 @@ var KmlReader = new Class({
     },
     parseMarkers: function(kml, callback) {
         var me = this;
-        if(!callback){
-            callback=kml;
-            kml=me._kml;
+        if (!callback) {
+            callback = kml;
+            kml = me._kml;
         }
         var markerData = me._filter(KmlReader.ParseDomMarkers(kml));
         Array.each(markerData, function(p, i) {
@@ -101,9 +98,9 @@ var KmlReader = new Class({
     },
     parsePolygons: function(kml, callback) {
         var me = this;
-        if(!callback){
-            callback=kml;
-            kml=me._kml;
+        if (!callback) {
+            callback = kml;
+            kml = me._kml;
         }
         var polygonData = me._filter(KmlReader.ParseDomPolygons(kml));
         Array.each(polygonData, function(p, i) {
@@ -113,9 +110,9 @@ var KmlReader = new Class({
     },
     parseLines: function(kml, callback) {
         var me = this;
-        if(!callback){
-            callback=kml;
-            kml=me._kml;
+        if (!callback) {
+            callback = kml;
+            kml = me._kml;
         }
         var lineData = me._filter(KmlReader.ParseDomLines(kml));
         Array.each(lineData, function(p, i) {
@@ -125,9 +122,9 @@ var KmlReader = new Class({
     },
     parseGroundOverlays: function(kml, callback) {
         var me = this;
-        if(!callback){
-            callback=kml;
-            kml=me._kml;
+        if (!callback) {
+            callback = kml;
+            kml = me._kml;
         }
         var overlayData = me._filter(KmlReader.ParseDomGroundOverlays(kml));
         Array.each(overlayData, function(o, i) {
@@ -135,11 +132,11 @@ var KmlReader = new Class({
         });
         return me;
     },
-    parseNetworklinks: function(kml,callback) {
+    parseNetworklinks: function(kml, callback) {
         var me = this;
-        if(!callback){
-            callback=kml;
-            kml=me._kml;
+        if (!callback) {
+            callback = kml;
+            kml = me._kml;
         }
         var linkData = me._filter(KmlReader.ParseDomLinks(kml));
         Array.each(linkData, function(p, i) {
@@ -172,7 +169,7 @@ var KmlReader = new Class({
             me._filters = [];
         }
         me._filters.push(filter);
-        return filter;
+        return me;
     }
 
 });
