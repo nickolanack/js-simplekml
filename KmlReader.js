@@ -15,6 +15,7 @@
  * 
  * 
  */
+'use strict';
 var KmlReader = new Class({
 
     initialize: function(kml) {
@@ -27,19 +28,19 @@ var KmlReader = new Class({
 
             if (window.DOMParser) {
                 parseXml = function(xmlStr) {
-                    return (new window.DOMParser()).parseFromString(xmlStr, "text/xml");
+                    return (new window.DOMParser()).parseFromString(xmlStr, 'text/xml');
                 };
-            } else if (typeof window.ActiveXObject != "undefined" && new window.ActiveXObject("Microsoft.XMLDOM")) {
+            } else if (typeof window.ActiveXObject != 'undefined' && new window.ActiveXObject('Microsoft.XMLDOM')) {
                 parseXml = function(xmlStr) {
-                    var xmlDoc = new window.ActiveXObject("Microsoft.XMLDOM");
-                    xmlDoc.async = "false";
+                    var xmlDoc = new window.ActiveXObject('Microsoft.XMLDOM');
+                    xmlDoc.async = 'false';
                     xmlDoc.loadXML(xmlStr);
                     return xmlDoc;
                 };
             } else {
                 parseXml = function() {
                     return null;
-                }
+                };
             }
 
             kml = parseXml(kml);
@@ -152,8 +153,9 @@ var KmlReader = new Class({
 
                 var bool = true;
                 Array.each(me._filters, function(f) {
-                    if (f(item) === false)
+                    if (f(item) === false) {
                         bool = false;
+                    }
                 });
                 if (bool) {
                     filtered.push(item);
@@ -357,7 +359,7 @@ for (i = 0; i < markerDomNodes.length; i++) {
         icon = KmlReader.ResolveDomStyle(icon, xmlDom).icon;
     }
     if (icon) {
-        marker['icon'] = icon; //better to not have any hint of an icon (ie: icon:null) so that default can be used by caller
+        marker.icon = icon; //better to not have any hint of an icon (ie: icon:null) so that default can be used by caller
     }
     markers.push(marker);
 }
@@ -367,8 +369,8 @@ return markers;
 
 KmlReader.ParseDomCoordinates = function(xmlDom) {
 var coordNodes = xmlDom.getElementsByTagName('coordinates');
-if (coordNodes.length == 0) {
-    JSConsoleWarn(["KmlReader. DOM Node did not contain coordinates!", {
+if (!coordNodes.length) {
+    JSConsoleWarn(['KmlReader. DOM Node did not contain coordinates!', {
         node: xmlDom
     }]);
     return null;
@@ -393,8 +395,8 @@ return coordinates;
 };
 KmlReader.ParseDomBounds = function(xmlDom) {
 var coordNodes = xmlDom.getElementsByTagName('LatLonBox');
-if (coordNodes.length == 0) {
-    JSConsoleWarn(["KmlReader. DOM Node did not contain coordinates!", {
+if (!coordNodes.length) {
+    JSConsoleWarn(['KmlReader. DOM Node did not contain coordinates!', {
         node: xmlDom
     }]);
     return null;
@@ -405,33 +407,38 @@ var souths = node.getElementsByTagName('south');
 var easts = node.getElementsByTagName('east');
 var wests = node.getElementsByTagName('west');
 
-if (norths.length == 0) {
-    JSConsoleWarn(["KmlReader. DOM LatLngBox Node did not contain north!", {
+var north = null;
+var south = null;
+var east = null;
+var west = null;
+
+if (!norths.length) {
+    JSConsoleWarn(['KmlReader. DOM LatLngBox Node did not contain north!', {
         node: xmlDom
     }]);
 } else {
-    var north = parseFloat(KmlReader.Value(norths.item(0)));
+    north = parseFloat(KmlReader.Value(norths.item(0)));
 }
-if (souths.length == 0) {
-    JSConsoleWarn(["KmlReader. DOM LatLngBox Node did not contain south!", {
+if (!souths.length) {
+    JSConsoleWarn(['KmlReader. DOM LatLngBox Node did not contain south!', {
         node: xmlDom
     }]);
 } else {
-    var south = parseFloat(KmlReader.Value(souths.item(0)));
+    south = parseFloat(KmlReader.Value(souths.item(0)));
 }
-if (easts.length == 0) {
-    JSConsoleWarn(["KmlReader. DOM LatLngBox Node did not contain east!", {
+if (!easts.length) {
+    JSConsoleWarn(['KmlReader. DOM LatLngBox Node did not contain east!', {
         node: xmlDom
     }]);
 } else {
-    var east = parseFloat(KmlReader.Value(easts.item(0)));
+    east = parseFloat(KmlReader.Value(easts.item(0)));
 }
-if (wests.length == 0) {
-    JSConsoleWarn(["KmlReader. DOM LatLngBox Node did not contain west!", {
+if (!wests.length) {
+    JSConsoleWarn(['KmlReader. DOM LatLngBox Node did not contain west!', {
         node: xmlDom
     }]);
 } else {
-    var west = parseFloat(KmlReader.Value(wests.item(0)));
+    west = parseFloat(KmlReader.Value(wests.item(0)));
 }
 return {
     north: north,
@@ -448,7 +455,7 @@ var config = Object.merge({}, {
 }, options);
 
 var data = {
-    name: "",
+    name: '',
     description: null,
     tags: {}
 };
@@ -480,7 +487,7 @@ for (i = 0; i < extendedDatas.length; i++) {
         for (j = 0; j < extendedDatas.item(i).childNodes.length; j++) {
             var c = extendedDatas.item(i).childNodes.item(j);
             var t = KmlReader.ParseTag(c);
-            if (t.name != "#text") {
+            if (t.name != '#text') {
                 data.tags[t.name] = t.value;
             }
         }
@@ -496,10 +503,10 @@ var tags = {
 };
 switch (xmlDom.nodeName) {
 
-case "Data": //TODO: add data tags...
-case "data":
+case 'Data': //TODO: add data tags...
+case 'data':
     break;
-case "ID": tags.name = "ID";
+case 'ID': tags.name = 'ID';
     tags.value = KmlReader.Value(xmlDom);
     break;
 default:
@@ -518,7 +525,7 @@ for (var i = 0; i < max; i++) {
     }
     current = current.parentNode;
 }
-JSConsoleError(["KmlReader. Could not find parent node within expected bounds.", {
+JSConsoleError(['KmlReader. Could not find parent node within expected bounds.', {
     parentNode: parent,
     childNode: child,
     bounds: max
@@ -528,7 +535,7 @@ return false;
 KmlReader.ParseDomStyle = function(xmlDom, options) {
 
 var config = Object.merge({}, {
-    defaultStyle: "default"
+    defaultStyle: 'default'
 }, options);
 
 
@@ -536,7 +543,7 @@ var config = Object.merge({}, {
 var styles = xmlDom.getElementsByTagName('styleUrl');
 var style = config.defaultStyle;
 if (styles.length == 0) {
-    JSConsoleWarn(["KmlReader. DOM Node did not contain styleUrl!", {
+    JSConsoleWarn(['KmlReader. DOM Node did not contain styleUrl!', {
         node: xmlDom,
         options: config
     }]);
@@ -559,7 +566,7 @@ var icons = xmlDom.getElementsByTagName('Icon');
 var icon = config.defaultStyle;
 var scale = config.defaultScale;
 if (icons.length == 0) {
-    JSConsoleWarn(["KmlReader. DOM Node did not contain Icon!", {
+    JSConsoleWarn(['KmlReader. DOM Node did not contain Icon!', {
         node: xmlDom,
         options: config
     }]);
@@ -567,7 +574,7 @@ if (icons.length == 0) {
     var node = icons.item(0);
     var urls = node.getElementsByTagName('href');
     if (urls.length == 0) {
-        JSConsoleWarn(["KmlReader. DOM Icon Node did not contain href!", {
+        JSConsoleWarn(['KmlReader. DOM Icon Node did not contain href!', {
             node: xmlDom,
             options: config
         }]);
@@ -578,7 +585,7 @@ if (icons.length == 0) {
 
     var scales = node.getElementsByTagName('viewBoundScale');
     if (scales.length == 0) {
-        JSConsoleWarn(["KmlReader. DOM Icon Node did not contain viewBoundScale!", {
+        JSConsoleWarn(['KmlReader. DOM Icon Node did not contain viewBoundScale!', {
             node: xmlDom,
             options: config
         }]);
@@ -734,7 +741,6 @@ try {
             str += KmlReader.Value(c);
         });
 } catch ( e ) {
-    (node.childNodes);
     JSConsoleError(['SimpleKML Parser Exception', e]);
 }
 return str;
