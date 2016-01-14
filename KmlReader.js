@@ -695,7 +695,7 @@ KmlReader.KMLConversions = {
         var color = colorStr.substring(6, 8) + colorStr.substring(4, 6) + colorStr.substring(2, 4);
         var opacity = ((parseInt(colorStr.substring(0, 2), 16)) * 1.000) / (parseInt("FF", 16));
 
-        rgbVal = {
+        var rgbVal = {
             color: '#' + color,
             opacity: opacity
         };
