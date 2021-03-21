@@ -1,0 +1,19 @@
+{
+  "name": "js-simplekml",
+  "version": "1.0.0",
+  "description": "A Javascript kml parser",
+  "main": "KmlReader.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nickolanack/js-simplekml.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nickolanack/js-simplekml/issues"
+  },
+  "homepage": "https://github.com/nickolanack/js-simplekml#readme"
+}
