@@ -87,7 +87,7 @@ var KmlReader = (function() {
         }
 
         var documentData = me._filter(KmlReader.ParseDomDocuments(kml));
-        Array.each(documentData, function(p, i) {
+        documentData.forEach(function(p, i) {
             callback(p, kml, documentData, i);
         });
         return me;
@@ -99,7 +99,7 @@ var KmlReader = (function() {
             kml = me._kml;
         }
         var folderData = me._filter(KmlReader.ParseDomFolders(kml));
-        Array.each(folderData, function(p, i) {
+        folderData.forEach(function(p, i) {
             callback(p, kml, folderData, i);
         });
         return me;
@@ -111,7 +111,7 @@ var KmlReader = (function() {
             kml = me._kml;
         }
         var markerData = me._filter(KmlReader.ParseDomMarkers(kml));
-        Array.each(markerData, function(p, i) {
+        markerData.forEach(function(p, i) {
             callback(p, kml, markerData, i);
         });
         return me;
@@ -123,7 +123,7 @@ var KmlReader = (function() {
             kml = me._kml;
         }
         var polygonData = me._filter(KmlReader.ParseDomPolygons(kml));
-        Array.each(polygonData, function(p, i) {
+        polygonData.forEach(function(p, i) {
             callback(p, kml, polygonData, i);
         });
         return me;
@@ -135,7 +135,7 @@ var KmlReader = (function() {
             kml = me._kml;
         }
         var lineData = me._filter(KmlReader.ParseDomLines(kml));
-        Array.each(lineData, function(p, i) {
+        lineData.forEach(function(p, i) {
             callback(p, kml, lineData, i);
         });
         return me;
@@ -147,7 +147,7 @@ var KmlReader = (function() {
             kml = me._kml;
         }
         var overlayData = me._filter(KmlReader.ParseDomGroundOverlays(kml));
-        Array.each(overlayData, function(o, i) {
+        overlayData.forEach(function(o, i) {
             callback(o, kml, overlayData, i);
         });
         return me;
@@ -159,7 +159,7 @@ var KmlReader = (function() {
             kml = me._kml;
         }
         var linkData = me._filter(KmlReader.ParseDomLinks(kml));
-        Array.each(linkData, function(p, i) {
+        linkData.forEach(function(p, i) {
             callback(p, kml, linkData, i);
         });
         return me;
@@ -168,10 +168,10 @@ var KmlReader = (function() {
         var me = this;
         var filtered = [];
         if (me._filters && a && a.length) {
-            Array.each(a, function(item) {
+            a.forEach(function(item) {
 
                 var bool = true;
-                Array.each(me._filters, function(f) {
+                me._filters.forEach(function(f) {
                     if (f(item) === false) {
                         bool = false;
                     }
@@ -412,6 +412,7 @@ var KmlReader = (function() {
                     //JSConsole([c[1],c[0]]);
                     coordinates.push([c[1], c[0]]);
                 }
+
 
             });
 
