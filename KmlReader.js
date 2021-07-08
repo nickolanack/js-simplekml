@@ -276,9 +276,28 @@ var KmlReader = (function() {
         var lines = [];
         var lineDomNodes = KmlReader.ParseDomItems(xmlDom, 'LineString');
         var i;
+
+        var styles={};
+        var getStyle=function(styleName, xmlDom){
+
+            if(typeof styles[styleName]=="undefined"){
+                var style=KmlReader.ResolveDomStyle(styleName, xmlDom);
+                styles[styleName]=style;
+            }
+
+            return styles[styleName];
+
+        }
+        
+
         for (i = 0; i < lineDomNodes.length; i++) {
 
             var node = lineDomNodes[i];
+
+
+            var attributes=KmlReader.ParseNonSpatialDomData(node, {});
+            var styleName=KmlReader.ParseDomStyle(node);
+            var style=getStyle(styleName, xmlDom);
 
             var polygonData = _append({
                     type: 'line',
@@ -287,9 +306,8 @@ var KmlReader = (function() {
                     polyColor: '#77000000', //black semitransparent,
                     coordinates: KmlReader.ParseDomCoordinates(node) //returns an array of GLatLngs
                 },
-
-                KmlReader.ParseNonSpatialDomData(node, {}),
-                KmlReader.ResolveDomStyle(KmlReader.ParseDomStyle(node), xmlDom)
+                attributes,
+                style
 
             );
 
@@ -644,6 +662,9 @@ var KmlReader = (function() {
             scale: scale
         };
     };
+
+
+
     KmlReader.ResolveDomStyle = function(style, xmlDom) {
         var data = {};
         var name = (style.charAt(0) == '#' ? style.substring(1, style.length) : style);
@@ -689,6 +710,10 @@ var KmlReader = (function() {
                     var icon = KmlReader.Value(iconStyle);
                     data.icon = icon;
                 }
+
+
+
+
             }
         }
         return data;
