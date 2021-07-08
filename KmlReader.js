@@ -416,13 +416,13 @@ var KmlReader = (function() {
 
             var attributes=KmlReader.ParseNonSpatialDomData(node, {});
             var styleName=KmlReader.ParseDomStyle(node);
-            
+
             var coords = KmlReader.ParseDomCoordinates(node);
             var marker = _append({
                 type: 'point'
             }, {
                 coordinates: coords[0] //returns an array of google.maps.LatLng
-            }, attributes;
+            }, attributes);
             var icon = styleName;
             if (icon.charAt(0) == '#') {
                 icon = getStyle(styleName, xmlDom).icon;
