@@ -275,21 +275,18 @@ var KmlReader = (function() {
     KmlReader.ParseDomLines = function(xmlDom) {
         var lines = [];
         var lineDomNodes = KmlReader.ParseDomItems(xmlDom, 'LineString');
-        var i;
+        
 
         var styles={};
         var getStyle=function(styleName, xmlDom){
-
             if(typeof styles[styleName]=="undefined"){
                 var style=KmlReader.ResolveDomStyle(styleName, xmlDom);
                 styles[styleName]=style;
             }
-
             return styles[styleName];
-
         }
         
-
+        var i;
         for (i = 0; i < lineDomNodes.length; i++) {
 
             var node = lineDomNodes[i];
@@ -347,10 +344,25 @@ var KmlReader = (function() {
         var polygons = [];
         var polygonDomNodes = KmlReader.ParseDomItems(xmlDom, 'Polygon');
 
+
+        var styles={};
+        var getStyle=function(styleName, xmlDom){
+            if(typeof styles[styleName]=="undefined"){
+                var style=KmlReader.ResolveDomStyle(styleName, xmlDom);
+                styles[styleName]=style;
+            }
+            return styles[styleName];
+        }
+
         var i;
         for (i = 0; i < polygonDomNodes.length; i++) {
 
             var node = polygonDomNodes[i];
+
+
+            var attributes=KmlReader.ParseNonSpatialDomData(node, {});
+            var styleName=KmlReader.ParseDomStyle(node);
+            var style=getStyle(styleName, xmlDom);
 
             var polygonData = _append({
                     type: 'polygon',
@@ -361,8 +373,8 @@ var KmlReader = (function() {
                     coordinates: KmlReader.ParseDomCoordinates(node) //returns an array of google.maps.LatLng
                 },
 
-                KmlReader.ParseNonSpatialDomData(node, {}),
-                KmlReader.ResolveDomStyle(KmlReader.ParseDomStyle(node), xmlDom)
+                attributes,
+                style
 
             );
 
@@ -385,18 +397,35 @@ var KmlReader = (function() {
     KmlReader.ParseDomMarkers = function(xmlDom) {
         var markers = [];
         var markerDomNodes = KmlReader.ParseDomItems(xmlDom, 'Point');
+
+
+        var styles={};
+        var getStyle=function(styleName, xmlDom){
+            if(typeof styles[styleName]=="undefined"){
+                var style=KmlReader.ResolveDomStyle(styleName, xmlDom);
+                styles[styleName]=style;
+            }
+            return styles[styleName];
+        }
+
+
+
         var i;
         for (i = 0; i < markerDomNodes.length; i++) {
             var node = markerDomNodes[i];
+
+            var attributes=KmlReader.ParseNonSpatialDomData(node, {});
+            var styleName=KmlReader.ParseDomStyle(node);
+            
             var coords = KmlReader.ParseDomCoordinates(node);
             var marker = _append({
                 type: 'point'
             }, {
                 coordinates: coords[0] //returns an array of google.maps.LatLng
-            }, KmlReader.ParseNonSpatialDomData(node, {}));
-            var icon = KmlReader.ParseDomStyle(node);
+            }, attributes;
+            var icon = styleName;
             if (icon.charAt(0) == '#') {
-                icon = KmlReader.ResolveDomStyle(icon, xmlDom).icon;
+                icon = getStyle(styleName, xmlDom).icon;
             }
             if (icon) {
                 marker.icon = icon; //better to not have any hint of an icon (ie: icon:null) so that default can be used by caller
