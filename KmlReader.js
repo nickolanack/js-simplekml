@@ -94,7 +94,7 @@ var KmlReader = (function() {
     };
 
 
-    KmlReader.prototype._filter = function(type, data) {
+    KmlReader.prototype._filter = function(type, data ,i) {
         if (!this._filters) {
             return true;
         }
@@ -102,7 +102,7 @@ var KmlReader = (function() {
         //if any filter functions with same type return false then length>0 and item will not be processed;
 
         return this._filters.filter(function(filter) {
-            return filter.type == type && (!filter.filter(data));
+            return filter.type == type && (!filter.filter(data, i));
         }).length == 0;
 
     }
