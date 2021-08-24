@@ -80,32 +80,7 @@ var KmlReader = (function() {
 
     }
 
-    KmlReader.prototype.addFilter = function(type, fn) {
-
-        if (!this._filters) {
-            this._filters = [];
-        }
-
-        this._filters.push({
-            type: type,
-            filter: fn
-        });
-
-    };
-
-
-    KmlReader.prototype._filter = function(type, data ,i) {
-        if (!this._filters) {
-            return true;
-        }
-
-        //if any filter functions with same type return false then length>0 and item will not be processed;
-
-        return this._filters.filter(function(filter) {
-            return filter.type == type && (!filter.filter(data, i));
-        }).length == 0;
-
-    }
+    
 
     KmlReader.prototype.parseDocuments = function(kml, callback) {
         var me = this;
@@ -116,11 +91,6 @@ var KmlReader = (function() {
 
         var documentData = me._filter(KmlReader.ParseDomDocuments(kml));
         documentData.forEach(function(p, i) {
-
-            if (!me._filter('document', data, i)) {
-                return;
-            }
-
             callback(p, kml, documentData, i);
         });
         return me;
@@ -134,12 +104,6 @@ var KmlReader = (function() {
         }
         var folderData = me._filter(KmlReader.ParseDomFolders(kml));
         folderData.forEach(function(p, i) {
-
-
-            if (!me._filter('folder', data, i)) {
-                return;
-            }
-
             callback(p, kml, folderData, i);
         });
         return me;
@@ -153,11 +117,6 @@ var KmlReader = (function() {
         }
         var markerData = me._filter(KmlReader.ParseDomMarkers(kml));
         markerData.forEach(function(p, i) {
-
-            if (!me._filter('marker', data, i)) {
-                return;
-            }
-
             callback(p, kml, markerData, i);
         });
         return me;
@@ -170,12 +129,6 @@ var KmlReader = (function() {
         }
         var polygonData = me._filter(KmlReader.ParseDomPolygons(kml));
         polygonData.forEach(function(p, i) {
-
-
-            if (!me._filter('polygon', data, i)) {
-                return;
-            }
-
             callback(p, kml, polygonData, i);
         });
         return me;
@@ -188,11 +141,6 @@ var KmlReader = (function() {
         }
         var lineData = me._filter(KmlReader.ParseDomLines(kml));
         lineData.forEach(function(p, i) {
-
-            if (!me._filter('line', data, i)) {
-                return;
-            }
-
             callback(p, kml, lineData, i);
         });
         return me;
@@ -205,11 +153,6 @@ var KmlReader = (function() {
         }
         var overlayData = me._filter(KmlReader.ParseDomGroundOverlays(kml));
         overlayData.forEach(function(o, i) {
-
-            if (!me._filter('overlay', data, i)) {
-                return;
-            }
-
             callback(o, kml, overlayData, i);
         });
         return me;
@@ -222,11 +165,6 @@ var KmlReader = (function() {
         }
         var linkData = me._filter(KmlReader.ParseDomLinks(kml));
         linkData.forEach(function(p, i) {
-
-            if (!me._filter('link', data, i)) {
-                return;
-            }
-
             callback(p, kml, linkData, i);
         });
         return me;
@@ -239,6 +177,17 @@ var KmlReader = (function() {
 
                 var bool = true;
                 me._filters.forEach(function(f) {
+
+                    if(typeof f!='function'&&f.type){
+                        if(item.type===f.type){
+                            if (f.filter(item) === false) {
+                                bool = false;
+                            }
+                        }
+                        return;
+
+                    }
+
                     if (f(item) === false) {
                         bool = false;
                     }
@@ -251,15 +200,23 @@ var KmlReader = (function() {
         }
         return a;
     };
-    KmlReader.prototype.addFilter = function(filter) {
-        var me = this;
-        if (!me._filters) {
-            me._filters = [];
-        }
-        me._filters.push(filter);
-        return me;
-    };
+    KmlReader.prototype.addFilter = function(type, fn) {
 
+         if (!this._filters) {
+            this._filters = [];
+        }
+
+        if(typeof type=='function'){
+            fn=type;     
+            this._filters.push(fn);
+            return this;
+
+        }
+
+        this._filters.push({type, filter:fn});
+
+        return this;
+    };
 
 
     /**
@@ -274,7 +231,9 @@ var KmlReader = (function() {
         var i;
         for (i = 0; i < docsDomNodes.length; i++) {
             var node = docsDomNodes.item(i);
-            var docsData = _append({}, KmlReader.ParseDomDoc(node), KmlReader.ParseNonSpatialDomData(node, {}));
+            var docsData = _append({
+                type:'document'
+            }, KmlReader.ParseDomDoc(node), KmlReader.ParseNonSpatialDomData(node, {}));
             var transform = function(options) {
                 return options;
             };
