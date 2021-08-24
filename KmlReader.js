@@ -79,6 +79,34 @@ var KmlReader = (function() {
         }
 
     }
+
+    KmlReader.prototype.addFilter = function(type, fn) {
+
+        if (!this._filters) {
+            this._filters = [];
+        }
+
+        this._filters.push({
+            type: type,
+            filter: fn
+        });
+
+    };
+
+
+    KmlReader.prototype._filter = function(type, data) {
+        if (!this._filters) {
+            return true;
+        }
+
+        //if any filter functions with same type return false then length>0 and item will not be processed;
+
+        return this._filters.filter(function(filter) {
+            return filter.type == type && (!filter.filter(data));
+        }).length == 0;
+
+    }
+
     KmlReader.prototype.parseDocuments = function(kml, callback) {
         var me = this;
         if (!callback) {
@@ -88,10 +116,16 @@ var KmlReader = (function() {
 
         var documentData = me._filter(KmlReader.ParseDomDocuments(kml));
         documentData.forEach(function(p, i) {
+
+            if (!me._filter('document', data, i)) {
+                return;
+            }
+
             callback(p, kml, documentData, i);
         });
         return me;
     };
+
     KmlReader.prototype.parseFolders = function(kml, callback) {
         var me = this;
         if (!callback) {
@@ -100,10 +134,17 @@ var KmlReader = (function() {
         }
         var folderData = me._filter(KmlReader.ParseDomFolders(kml));
         folderData.forEach(function(p, i) {
+
+
+            if (!me._filter('folder', data, i)) {
+                return;
+            }
+
             callback(p, kml, folderData, i);
         });
         return me;
     };
+
     KmlReader.prototype.parseMarkers = function(kml, callback) {
         var me = this;
         if (!callback) {
@@ -112,6 +153,11 @@ var KmlReader = (function() {
         }
         var markerData = me._filter(KmlReader.ParseDomMarkers(kml));
         markerData.forEach(function(p, i) {
+
+            if (!me._filter('marker', data, i)) {
+                return;
+            }
+
             callback(p, kml, markerData, i);
         });
         return me;
@@ -124,6 +170,12 @@ var KmlReader = (function() {
         }
         var polygonData = me._filter(KmlReader.ParseDomPolygons(kml));
         polygonData.forEach(function(p, i) {
+
+
+            if (!me._filter('polygon', data, i)) {
+                return;
+            }
+
             callback(p, kml, polygonData, i);
         });
         return me;
@@ -136,6 +188,11 @@ var KmlReader = (function() {
         }
         var lineData = me._filter(KmlReader.ParseDomLines(kml));
         lineData.forEach(function(p, i) {
+
+            if (!me._filter('line', data, i)) {
+                return;
+            }
+
             callback(p, kml, lineData, i);
         });
         return me;
@@ -148,6 +205,11 @@ var KmlReader = (function() {
         }
         var overlayData = me._filter(KmlReader.ParseDomGroundOverlays(kml));
         overlayData.forEach(function(o, i) {
+
+            if (!me._filter('overlay', data, i)) {
+                return;
+            }
+
             callback(o, kml, overlayData, i);
         });
         return me;
@@ -160,6 +222,11 @@ var KmlReader = (function() {
         }
         var linkData = me._filter(KmlReader.ParseDomLinks(kml));
         linkData.forEach(function(p, i) {
+
+            if (!me._filter('link', data, i)) {
+                return;
+            }
+
             callback(p, kml, linkData, i);
         });
         return me;
@@ -275,26 +342,26 @@ var KmlReader = (function() {
     KmlReader.ParseDomLines = function(xmlDom) {
         var lines = [];
         var lineDomNodes = KmlReader.ParseDomItems(xmlDom, 'LineString');
-        
 
-        var styles={};
-        var getStyle=function(styleName, xmlDom){
-            if(typeof styles[styleName]=="undefined"){
-                var style=KmlReader.ResolveDomStyle(styleName, xmlDom);
-                styles[styleName]=style;
+
+        var styles = {};
+        var getStyle = function(styleName, xmlDom) {
+            if (typeof styles[styleName] == "undefined") {
+                var style = KmlReader.ResolveDomStyle(styleName, xmlDom);
+                styles[styleName] = style;
             }
             return styles[styleName];
         }
-        
+
         var i;
         for (i = 0; i < lineDomNodes.length; i++) {
 
             var node = lineDomNodes[i];
 
 
-            var attributes=KmlReader.ParseNonSpatialDomData(node, {});
-            var styleName=KmlReader.ParseDomStyle(node);
-            var style=getStyle(styleName, xmlDom);
+            var attributes = KmlReader.ParseNonSpatialDomData(node, {});
+            var styleName = KmlReader.ParseDomStyle(node);
+            var style = getStyle(styleName, xmlDom);
 
             var polygonData = _append({
                     type: 'line',
@@ -345,11 +412,11 @@ var KmlReader = (function() {
         var polygonDomNodes = KmlReader.ParseDomItems(xmlDom, 'Polygon');
 
 
-        var styles={};
-        var getStyle=function(styleName, xmlDom){
-            if(typeof styles[styleName]=="undefined"){
-                var style=KmlReader.ResolveDomStyle(styleName, xmlDom);
-                styles[styleName]=style;
+        var styles = {};
+        var getStyle = function(styleName, xmlDom) {
+            if (typeof styles[styleName] == "undefined") {
+                var style = KmlReader.ResolveDomStyle(styleName, xmlDom);
+                styles[styleName] = style;
             }
             return styles[styleName];
         }
@@ -360,9 +427,9 @@ var KmlReader = (function() {
             var node = polygonDomNodes[i];
 
 
-            var attributes=KmlReader.ParseNonSpatialDomData(node, {});
-            var styleName=KmlReader.ParseDomStyle(node);
-            var style=getStyle(styleName, xmlDom);
+            var attributes = KmlReader.ParseNonSpatialDomData(node, {});
+            var styleName = KmlReader.ParseDomStyle(node);
+            var style = getStyle(styleName, xmlDom);
 
             var polygonData = _append({
                     type: 'polygon',
@@ -399,11 +466,11 @@ var KmlReader = (function() {
         var markerDomNodes = KmlReader.ParseDomItems(xmlDom, 'Point');
 
 
-        var styles={};
-        var getStyle=function(styleName, xmlDom){
-            if(typeof styles[styleName]=="undefined"){
-                var style=KmlReader.ResolveDomStyle(styleName, xmlDom);
-                styles[styleName]=style;
+        var styles = {};
+        var getStyle = function(styleName, xmlDom) {
+            if (typeof styles[styleName] == "undefined") {
+                var style = KmlReader.ResolveDomStyle(styleName, xmlDom);
+                styles[styleName] = style;
             }
             return styles[styleName];
         }
@@ -414,8 +481,8 @@ var KmlReader = (function() {
         for (i = 0; i < markerDomNodes.length; i++) {
             var node = markerDomNodes[i];
 
-            var attributes=KmlReader.ParseNonSpatialDomData(node, {});
-            var styleName=KmlReader.ParseDomStyle(node);
+            var attributes = KmlReader.ParseNonSpatialDomData(node, {});
+            var styleName = KmlReader.ParseDomStyle(node);
 
             var coords = KmlReader.ParseDomCoordinates(node);
             var marker = _append({
@@ -739,7 +806,6 @@ var KmlReader = (function() {
                     var icon = KmlReader.Value(iconStyle);
                     data.icon = icon;
                 }
-
 
 
 
