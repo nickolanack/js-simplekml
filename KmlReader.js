@@ -619,6 +619,15 @@ var KmlReader = (function() {
 
             case 'Data': //TODO: add data tags...
             case 'data':
+
+                var label=xmlDom.getElementsByTagName('displayName');
+                if(label.length>0){
+                    tags.label=label.item(0).childNodes.item(0).nodeValue;
+                }
+
+                tags.name=xmlDom.getAttribute('name');
+                tags.value=xmlDom.getElementsByTagName('value').item(0).childNodes.item(0).nodeValue
+
                 break;
             case 'ID':
                 tags.name = 'ID';
