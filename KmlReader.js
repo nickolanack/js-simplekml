@@ -20,6 +20,19 @@
 var KmlReader = (function() {
 
 
+    if (typeof console == 'undefined') {
+        var _console = {
+            "log": function() {},
+            "warn": function() {},
+            "error": function() {}
+        }
+        if (typeof window != 'undefined') {
+            window.console = _console;
+        }
+    }
+
+
+
     var _append = function(obj /*, arg1, arg2*/ ) {
 
         var a = obj || {};
@@ -37,29 +50,40 @@ var KmlReader = (function() {
     }
 
 
+
     var KmlReader = function(kml) {
 
         var me = this;
 
-        if ((typeof kml) == 'string') {
+        if (typeof kml == 'string') {
+
 
             var parseXml;
 
-            if (window.DOMParser) {
-                parseXml = function(xmlStr) {
-                    return (new window.DOMParser()).parseFromString(xmlStr, 'text/xml');
-                };
-            } else if (typeof window.ActiveXObject != 'undefined' && new window.ActiveXObject('Microsoft.XMLDOM')) {
-                parseXml = function(xmlStr) {
-                    var xmlDoc = new window.ActiveXObject('Microsoft.XMLDOM');
-                    xmlDoc.async = 'false';
-                    xmlDoc.loadXML(xmlStr);
-                    return xmlDoc;
-                };
-            } else {
-                parseXml = function() {
-                    return null;
-                };
+            (function() {
+
+                if (typeof window != 'undefined') {
+                    if (window && window.DOMParser) {
+
+                        parseXml = function(xmlStr) {
+                            return (new window.DOMParser()).parseFromString(xmlStr, 'text/xml');
+                        };
+                    } else if (window && typeof window.ActiveXObject != 'undefined' && new window.ActiveXObject('Microsoft.XMLDOM')) {
+
+                        parseXml = function(xmlStr) {
+                            var xmlDoc = new window.ActiveXObject('Microsoft.XMLDOM');
+                            xmlDoc.async = 'false';
+                            xmlDoc.loadXML(xmlStr);
+                            return xmlDoc;
+                        };
+                    }
+
+                }
+
+            })();
+
+            if (!parseXml) {
+                throw 'DOMParser is not available. You can pass DomDocument as arg directly to KmlReader ie: new KmlReader(new DOMParser().parseFromString(...));';
             }
 
             kml = parseXml(kml);
@@ -70,17 +94,9 @@ var KmlReader = (function() {
 
 
 
-        //replaces console.log which is not supported accross all browsers
-        if (!window.JSConsoleWarn) {
-            window.JSConsoleWarn = function() {};
-        }
-        if (!window.JSConsoleError) {
-            window.JSConsoleError = function() {};
-        }
-
     }
 
-    
+
 
     KmlReader.prototype.parseDocuments = function(kml, callback) {
         var me = this;
@@ -91,7 +107,7 @@ var KmlReader = (function() {
 
         var documentData = me._filter(KmlReader.ParseDomDocuments(kml));
         documentData.forEach(function(p, i) {
-            callback(p, kml, documentData, i);
+            callback(p, documentData, i);
         });
         return me;
     };
@@ -104,23 +120,81 @@ var KmlReader = (function() {
         }
         var folderData = me._filter(KmlReader.ParseDomFolders(kml));
         folderData.forEach(function(p, i) {
-            callback(p, kml, folderData, i);
+            callback(p, folderData, i);
         });
         return me;
     };
 
-    KmlReader.prototype.parseMarkers = function(kml, callback) {
+
+    var _batchTimeout = function(someList, callback, chunkLength, timeout) {
+
+        var i=0;
+        if(typeof chunkLength=='undefined'){
+            chunkLength=1000;
+        }
+        if(typeof timeout=='undefined'){
+            timeout=10;
+        }
+
+        var _batch=function(){
+            setTimeout(function() {
+                var list = [];
+
+
+                callback(someList.slice(i, Math.min(i + chunkLength, someList.length)), i);
+                i += chunkLength;
+
+                if (i < someList.length) {
+                    _batch();
+                }
+            }, timeout);
+        };
+        _batch();
+
+    };
+
+
+    KmlReader.prototype.parseMarkers = function(kml /*optional*/ , callback) {
         var me = this;
         if (!callback) {
             callback = kml;
             kml = me._kml;
         }
-        var markerData = me._filter(KmlReader.ParseDomMarkers(kml));
-        markerData.forEach(function(p, i) {
-            callback(p, kml, markerData, i);
+
+
+        var markerNodes = KmlReader.ParseDomMarkerNodes(kml);
+        var emptyList = markerNodes.map(function() {
+            return null;
         });
+        
+
+        /**
+         * the following processes markers in batches of 1000, using a chained timeout call 
+         */
+
+        var getStyle = KmlReader._GetCachedStyleLookupFn(kml);
+        var offset=0;
+        _batchTimeout(markerNodes, function(markerDomNodes, i) {
+            var filteredData=me._filter(markerDomNodes.map(function(markerDomNode) {
+                return KmlReader.ParseDomMarker(markerDomNode, getStyle);
+            }));
+
+            
+            emptyList.splice(i, markerDomNodes.length, filteredData);
+            filteredData.forEach(function(data, index){
+                callback(data, emptyList, index+offset);
+            });
+            offset+=filteredData.length;
+
+        });
+
+        // var markerData = me._filter(KmlReader.ParseDomMarkers(kml));
+        // markerData.forEach(function(p, i) {
+        //     callback(p, markerData, i);
+        // });
         return me;
     };
+
     KmlReader.prototype.parsePolygons = function(kml, callback) {
         var me = this;
         if (!callback) {
@@ -129,7 +203,7 @@ var KmlReader = (function() {
         }
         var polygonData = me._filter(KmlReader.ParseDomPolygons(kml));
         polygonData.forEach(function(p, i) {
-            callback(p, kml, polygonData, i);
+            callback(p, polygonData, i);
         });
         return me;
     };
@@ -141,7 +215,7 @@ var KmlReader = (function() {
         }
         var lineData = me._filter(KmlReader.ParseDomLines(kml));
         lineData.forEach(function(p, i) {
-            callback(p, kml, lineData, i);
+            callback(p, lineData, i);
         });
         return me;
     };
@@ -153,7 +227,7 @@ var KmlReader = (function() {
         }
         var overlayData = me._filter(KmlReader.ParseDomGroundOverlays(kml));
         overlayData.forEach(function(o, i) {
-            callback(o, kml, overlayData, i);
+            callback(o, overlayData, i);
         });
         return me;
     };
@@ -165,7 +239,7 @@ var KmlReader = (function() {
         }
         var linkData = me._filter(KmlReader.ParseDomLinks(kml));
         linkData.forEach(function(p, i) {
-            callback(p, kml, linkData, i);
+            callback(p, linkData, i);
         });
         return me;
     };
@@ -178,8 +252,8 @@ var KmlReader = (function() {
                 var bool = true;
                 me._filters.forEach(function(f) {
 
-                    if(typeof f!='function'&&f.type){
-                        if(item.type===f.type){
+                    if (typeof f != 'function' && f.type) {
+                        if (item.type === f.type) {
                             if (f.filter(item) === false) {
                                 bool = false;
                             }
@@ -202,18 +276,21 @@ var KmlReader = (function() {
     };
     KmlReader.prototype.addFilter = function(type, fn) {
 
-         if (!this._filters) {
+        if (!this._filters) {
             this._filters = [];
         }
 
-        if(typeof type=='function'){
-            fn=type;     
+        if (typeof type == 'function') {
+            fn = type;
             this._filters.push(fn);
             return this;
 
         }
 
-        this._filters.push({type, filter:fn});
+        this._filters.push({
+            type,
+            filter: fn
+        });
 
         return this;
     };
@@ -232,7 +309,7 @@ var KmlReader = (function() {
         for (i = 0; i < docsDomNodes.length; i++) {
             var node = docsDomNodes.item(i);
             var docsData = _append({
-                type:'document'
+                type: 'document'
             }, KmlReader.ParseDomDoc(node), KmlReader.ParseNonSpatialDomData(node, {}));
             var transform = function(options) {
                 return options;
@@ -421,51 +498,64 @@ var KmlReader = (function() {
     };
 
     KmlReader.ParseDomMarkers = function(xmlDom) {
-        var markers = [];
-        var markerDomNodes = KmlReader.ParseDomItems(xmlDom, 'Point');
+        var markerDomNodes = KmlReader.ParseDomMarkerNodes(xmlDom);
 
+        var getStyle = KmlReader._GetCachedStyleLookupFn(xmlDom);
+
+        return markerDomNodes.map(function(markerDomNode) {
+            return KmlReader.ParseDomMarker(markerDomNode, getStyle);
+        });
+    };
+
+    KmlReader.ParseDomMarkerNodes = function(xmlDom) {
+        return KmlReader.ParseDomItems(xmlDom, 'Point');
+    };
+
+
+
+    KmlReader._GetCachedStyleLookupFn = function(xmlDom) {
 
         var styles = {};
-        var getStyle = function(styleName, xmlDom) {
+        var getStyle = function(styleName) {
             if (typeof styles[styleName] == "undefined") {
                 var style = KmlReader.ResolveDomStyle(styleName, xmlDom);
                 styles[styleName] = style;
             }
             return styles[styleName];
         }
+        return getStyle;
+
+    }
+
+    KmlReader.ParseDomMarker = function(xmlMarkerNode, getStyleFn) {
 
 
+        var attributes = KmlReader.ParseNonSpatialDomData(xmlMarkerNode, {});
+        var styleName = KmlReader.ParseDomStyle(xmlMarkerNode);
 
-        var i;
-        for (i = 0; i < markerDomNodes.length; i++) {
-            var node = markerDomNodes[i];
-
-            var attributes = KmlReader.ParseNonSpatialDomData(node, {});
-            var styleName = KmlReader.ParseDomStyle(node);
-
-            var coords = KmlReader.ParseDomCoordinates(node);
-            var marker = _append({
-                type: 'point'
-            }, {
-                coordinates: coords[0] //returns an array of google.maps.LatLng
-            }, attributes);
-            var icon = styleName;
-            if (icon.charAt(0) == '#') {
-                icon = getStyle(styleName, xmlDom).icon;
-            }
-            if (icon) {
-                marker.icon = icon; //better to not have any hint of an icon (ie: icon:null) so that default can be used by caller
-            }
-            markers.push(marker);
+        var coords = KmlReader.ParseDomCoordinates(xmlMarkerNode);
+        var marker = _append({
+            type: 'point'
+        }, {
+            coordinates: coords[0] //returns an array of google.maps.LatLng
+        }, attributes);
+        var icon = styleName;
+        if (icon.charAt(0) == '#') {
+            icon = getStyleFn(styleName).icon;
         }
-        return markers;
-    };
+        if (icon) {
+            marker.icon = icon; //better to not have any hint of an icon (ie: icon:null) so that default can be used by caller
+        }
+        return marker;
+
+    }
+
 
 
     KmlReader.ParseDomCoordinates = function(xmlDom) {
         var coordNodes = xmlDom.getElementsByTagName('coordinates');
         if (!coordNodes.length) {
-            JSConsoleWarn(['KmlReader. DOM Node did not contain coordinates!', {
+            console.warn(['KmlReader. DOM Node did not contain coordinates!', {
                 node: xmlDom
             }]);
             return null;
@@ -510,7 +600,7 @@ var KmlReader = (function() {
     KmlReader.ParseDomBounds = function(xmlDom) {
         var coordNodes = xmlDom.getElementsByTagName('LatLonBox');
         if (!coordNodes.length) {
-            JSConsoleWarn(['KmlReader. DOM Node did not contain coordinates!', {
+            console.warn(['KmlReader. DOM Node did not contain coordinates!', {
                 node: xmlDom
             }]);
             return null;
@@ -527,28 +617,28 @@ var KmlReader = (function() {
         var west = null;
 
         if (!norths.length) {
-            JSConsoleWarn(['KmlReader. DOM LatLngBox Node did not contain north!', {
+            console.warn(['KmlReader. DOM LatLngBox Node did not contain north!', {
                 node: xmlDom
             }]);
         } else {
             north = parseFloat(KmlReader.Value(norths.item(0)));
         }
         if (!souths.length) {
-            JSConsoleWarn(['KmlReader. DOM LatLngBox Node did not contain south!', {
+            console.warn(['KmlReader. DOM LatLngBox Node did not contain south!', {
                 node: xmlDom
             }]);
         } else {
             south = parseFloat(KmlReader.Value(souths.item(0)));
         }
         if (!easts.length) {
-            JSConsoleWarn(['KmlReader. DOM LatLngBox Node did not contain east!', {
+            console.warn(['KmlReader. DOM LatLngBox Node did not contain east!', {
                 node: xmlDom
             }]);
         } else {
             east = parseFloat(KmlReader.Value(easts.item(0)));
         }
         if (!wests.length) {
-            JSConsoleWarn(['KmlReader. DOM LatLngBox Node did not contain west!', {
+            console.warn(['KmlReader. DOM LatLngBox Node did not contain west!', {
                 node: xmlDom
             }]);
         } else {
@@ -620,13 +710,13 @@ var KmlReader = (function() {
             case 'Data': //TODO: add data tags...
             case 'data':
 
-                var label=xmlDom.getElementsByTagName('displayName');
-                if(label.length>0){
-                    tags.label=label.item(0).childNodes.item(0).nodeValue;
+                var label = xmlDom.getElementsByTagName('displayName');
+                if (label.length > 0) {
+                    tags.label = label.item(0).childNodes.item(0).nodeValue;
                 }
 
-                tags.name=xmlDom.getAttribute('name');
-                tags.value=xmlDom.getElementsByTagName('value').item(0).childNodes.item(0).nodeValue
+                tags.name = xmlDom.getAttribute('name');
+                tags.value = xmlDom.getElementsByTagName('value').item(0).childNodes.item(0).nodeValue
 
                 break;
             case 'ID':
@@ -649,7 +739,7 @@ var KmlReader = (function() {
             }
             current = current.parentNode;
         }
-        JSConsoleError(['KmlReader. Could not find parent node within expected bounds.', {
+        console.error(['KmlReader. Could not find parent node within expected bounds.', {
             parentNode: parent,
             childNode: child,
             bounds: max
@@ -667,10 +757,13 @@ var KmlReader = (function() {
         var styles = xmlDom.getElementsByTagName('styleUrl');
         var style = config.defaultStyle;
         if (styles.length == 0) {
-            JSConsoleWarn(['KmlReader. DOM Node did not contain styleUrl!', {
-                node: xmlDom,
-                options: config
-            }]);
+
+            var warning = 'KmlReader. DOM Node did not contain styleUrl!';
+
+            // console.warn([warning, {
+            //     node: xmlDom,
+            //     options: config
+            // }]);
         } else {
             var node = styles.item(0);
             style = (KmlReader.Value(node));
@@ -690,7 +783,7 @@ var KmlReader = (function() {
         var icon = config.defaultStyle;
         var scale = config.defaultScale;
         if (icons.length == 0) {
-            JSConsoleWarn(['KmlReader. DOM Node did not contain Icon!', {
+            console.warn(['KmlReader. DOM Node did not contain Icon!', {
                 node: xmlDom,
                 options: config
             }]);
@@ -698,7 +791,7 @@ var KmlReader = (function() {
             var node = icons.item(0);
             var urls = node.getElementsByTagName('href');
             if (urls.length == 0) {
-                JSConsoleWarn(['KmlReader. DOM Icon Node did not contain href!', {
+                console.warn(['KmlReader. DOM Icon Node did not contain href!', {
                     node: xmlDom,
                     options: config
                 }]);
@@ -709,7 +802,7 @@ var KmlReader = (function() {
 
             var scales = node.getElementsByTagName('viewBoundScale');
             if (scales.length == 0) {
-                JSConsoleWarn(['KmlReader. DOM Icon Node did not contain viewBoundScale!', {
+                console.warn(['KmlReader. DOM Icon Node did not contain viewBoundScale!', {
                     node: xmlDom,
                     options: config
                 }]);
@@ -794,7 +887,7 @@ var KmlReader = (function() {
             }
             var parent = (node.parentNode.nodeName == 'Placemark' ? node.parentNode : (node.parentNode.parentNode.nodeName == 'Placemark' ? node.parentNode.parentNode : null));
             if (parent == null) {
-                JSConsoleError(['Failed to find ParentNode for Element - ' + tagName, {
+                console.error(['Failed to find ParentNode for Element - ' + tagName, {
                     node: xmlDom
                 }]);
                 mm_trace();
@@ -870,7 +963,7 @@ var KmlReader = (function() {
                 str += KmlReader.Value(c);
             });
         } catch (e) {
-            JSConsoleError(['SimpleKML Parser Exception', e]);
+            console.error(['SimpleKML Parser Exception', e]);
         }
         return str;
     };
@@ -891,4 +984,9 @@ var KmlReader = (function() {
     return KmlReader;
 
 
-})()
+})();
+
+
+if (module) {
+    module.exports = KmlReader;
+}
