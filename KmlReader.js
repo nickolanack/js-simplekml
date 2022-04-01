@@ -1032,6 +1032,6 @@ var KmlReader = (function() {
 })();
 
 
-if (module) {
+if (typeof module!='undefined') {
     module.exports = KmlReader;
 }
