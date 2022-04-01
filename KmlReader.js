@@ -97,6 +97,35 @@ var KmlReader = (function() {
     }
 
 
+    KmlReader.prototype.runOnceOnIdle = function(fn){
+        if(!this._idleFns){
+            this._idleFns=[];
+        }
+
+        this._idleFns.push(fn);
+    }
+
+    KmlReader.prototype._scheduleIdle = function(fn){
+
+        if(this._idleTimer){
+            clearTimeout(this._idleTimer);
+        }
+        var me=this;
+        this._idleTimer=setTimeout(function(){
+            delete me._idleTimer;
+            if(me._idleFns&&me._idleFns.length>0){
+                var fns=me._idleFns.slice(0);
+                me._idleFns=[];
+                fns.forEach(function(fn){
+                    fn();
+                });
+            }
+        }, 100);
+
+
+    }
+
+
 
     KmlReader.prototype.parseDocuments = function(kml, callback) {
         var me = this;
@@ -108,7 +137,9 @@ var KmlReader = (function() {
         var documentData = me._filter(KmlReader.ParseDomDocuments(kml));
         documentData.forEach(function(p, i) {
             callback(p, documentData, i);
+            me._scheduleIdle();
         });
+        me._scheduleIdle();
         return me;
     };
 
@@ -121,7 +152,9 @@ var KmlReader = (function() {
         var folderData = me._filter(KmlReader.ParseDomFolders(kml));
         folderData.forEach(function(p, i) {
             callback(p, folderData, i);
+            me._scheduleIdle();
         });
+        me._scheduleIdle();
         return me;
     };
 
@@ -163,13 +196,14 @@ var KmlReader = (function() {
 
 
         var markerNodes = KmlReader.ParseDomMarkerNodes(kml);
-        var emptyList = markerNodes.map(function() {
+        var dataList = markerNodes.map(function() {
             return null;
         });
         
 
         /**
          * the following processes markers in batches of 1000, using a chained timeout call 
+         * the dataList argument may contain null values at higher indexes 
          */
 
         var getStyle = KmlReader._GetCachedStyleLookupFn(kml);
@@ -180,13 +214,15 @@ var KmlReader = (function() {
             }));
 
             
-            emptyList.splice(i, markerDomNodes.length, filteredData);
+            dataList.splice(i, markerDomNodes.length, filteredData);
             filteredData.forEach(function(data, index){
-                callback(data, emptyList, index+offset);
+                callback(data, dataList, index+offset);
+                me._scheduleIdle();
             });
             offset+=filteredData.length;
-
+            me._scheduleIdle();
         });
+        me._scheduleIdle();
 
         // var markerData = me._filter(KmlReader.ParseDomMarkers(kml));
         // markerData.forEach(function(p, i) {
@@ -204,7 +240,9 @@ var KmlReader = (function() {
         var polygonData = me._filter(KmlReader.ParseDomPolygons(kml));
         polygonData.forEach(function(p, i) {
             callback(p, polygonData, i);
+            me._scheduleIdle();
         });
+        me._scheduleIdle();
         return me;
     };
     KmlReader.prototype.parseLines = function(kml, callback) {
@@ -216,7 +254,10 @@ var KmlReader = (function() {
         var lineData = me._filter(KmlReader.ParseDomLines(kml));
         lineData.forEach(function(p, i) {
             callback(p, lineData, i);
+            me._scheduleIdle();
         });
+        me._scheduleIdle();
+
         return me;
     };
     KmlReader.prototype.parseGroundOverlays = function(kml, callback) {
@@ -228,7 +269,9 @@ var KmlReader = (function() {
         var overlayData = me._filter(KmlReader.ParseDomGroundOverlays(kml));
         overlayData.forEach(function(o, i) {
             callback(o, overlayData, i);
+            me._scheduleIdle();
         });
+        me._scheduleIdle();
         return me;
     };
     KmlReader.prototype.parseNetworklinks = function(kml, callback) {
@@ -240,7 +283,9 @@ var KmlReader = (function() {
         var linkData = me._filter(KmlReader.ParseDomLinks(kml));
         linkData.forEach(function(p, i) {
             callback(p, linkData, i);
+            me._scheduleIdle();
         });
+        me._scheduleIdle();
         return me;
     };
     KmlReader.prototype._filter = function(a) {
