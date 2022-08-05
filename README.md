@@ -26,7 +26,7 @@ const KmlReader=require('../KmlReader.js');
 const DOMParser=require('@xmldom/xmldom').DOMParser;
 const fs=require('fs');
 (new KmlReader(new DOMParser().parseFromString(fs.readFileSync('somefile.kml').toString())))
-  .parseMarkers(function(point){      
+  .parseMarkers((point)=>{      
        
   }).parseLines((line)=>{
                 
