@@ -96,6 +96,10 @@ var KmlReader = (function() {
 
     }
 
+    KmlReader.prototype.remove=function(){
+        delete this._kml;
+    }
+
 
     KmlReader.prototype.runOnceOnIdle = function(fn){
         if(!this._idleFns){
