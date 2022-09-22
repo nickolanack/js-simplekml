@@ -17,17 +17,17 @@ var BackgroundKmlReader = (function() {
 		var me=this;
 		this._worker.onmessage=function(e){
 
-			if(!me._handers[e.data.method]){
+			if(!me._handlers[e.data.method]){
 				throw 'Unexpected message: '+JSON.stringify(e.data);
 			}
 
 			if(e.data.result=="done"){
-				delete me._handers[e.data.method];
+				delete me._handlers[e.data.method];
 				return;
 			}
 
 			if(me._filter(e.data.feature)){
-				me._handers[e.data.method](e.data.feature, e.data.total, e.data.index);
+				me._handlers[e.data.method](e.data.feature, e.data.total, e.data.index);
 			}
 
 
