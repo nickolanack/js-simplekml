@@ -7,15 +7,17 @@ importScripts('KmlReader.js');
 var DOMParser = require('@xmldom/xmldom').DOMParser;
 
 var reader = null;
+var loading=false;
 var callIdle=function(){};
 
 onmessage = function(e) {
 
 
-    if (!reader) {
+    if ((!reader)&&(!loading)) {
 
     	if(e.data.indexOf('<')!=0){
     		//assume this is a url!
+    		loading=true;
             var xhttp = new XMLHttpRequest();
 
             xhttp.onload = function() {
@@ -42,7 +44,6 @@ onmessage = function(e) {
             //xhttp.setRequestHeader("Cache-Control", 'no-cache');
 
             xhttp.send();
-
             return;
         }
 
