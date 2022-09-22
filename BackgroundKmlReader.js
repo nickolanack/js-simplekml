@@ -12,10 +12,10 @@ var BackgroundKmlReader = (function() {
 	var BackgroundKmlReader = function(kml) {
 
 		this._worker=new Worker(workerScript);
-		worker.postMessage(kml);
+		this._worker.postMessage(kml);
 		this._handlers={};
 		var me=this;
-		worker.onmessage=function(e){
+		this._worker.onmessage=function(e){
 
 			if(!me._handers[e.data.method]){
 				throw 'Unexpected message: '+JSON.stringify(e.data);
@@ -37,7 +37,7 @@ var BackgroundKmlReader = (function() {
 
 	BackgroundKmlReader.prototype._execute = function(method, callback) {
 		this._handlers[method]=callback;
-		worker.postMessage(method);
+		this._worker.postMessage(method);
 	};
 
 	BackgroundKmlReader.prototype.parseMarkers = function(callback) {
