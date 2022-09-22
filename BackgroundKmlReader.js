@@ -1,5 +1,8 @@
 'use strict';
 
+/**
+ * BackgroundKmlReader is meant to be a drop in replacement for KmlReader class
+ */
 var BackgroundKmlReader = (function() {
 
 
@@ -118,5 +121,5 @@ var BackgroundKmlReader = (function() {
 
 
 
-}):
+});
 
