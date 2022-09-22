@@ -7,6 +7,7 @@ importScripts('KmlReader.js');
 var DOMParser = require('@xmldom/xmldom').DOMParser;
 
 var reader = null;
+var callIdle=function(){};
 
 onmessage = function(e) {
 
@@ -14,6 +15,17 @@ onmessage = function(e) {
     if (!reader) {
         reader = new KmlReader(new DOMParser().parseFromString(e.data));
         return;
+    }
+
+
+    if(e.data==='idle'){
+    	callIdle=function(){
+    		 postMessage("idle");
+    		 callIdle=function(){};
+    	};
+    	reader.runOnceOnIdle(function(){
+    		callIdle();
+    	});
     }
 
 

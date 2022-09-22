@@ -17,6 +17,12 @@ var BackgroundKmlReader = (function() {
 		var me=this;
 		this._worker.onmessage=function(e){
 
+			if(e.data=="idle"){
+				me._idle();
+				return;
+			}
+
+
 			if(!me._handlers[e.data.method]){
 				throw 'Unexpected message: '+JSON.stringify(e.data);
 			}
@@ -29,7 +35,6 @@ var BackgroundKmlReader = (function() {
 			if(me._filter(e.data.feature)){
 				me._handlers[e.data.method](e.data.feature, e.data.total, e.data.index);
 			}
-
 
 
 		};
@@ -68,11 +73,26 @@ var BackgroundKmlReader = (function() {
 
 
 
+	BackgroundKmlReader.prototype.runOnceOnIdle = function(fn){
+        if(!this._idleFns){
+            this._idleFns=[];
+        }
+        this._worker.postMessage('idle');
+        this._idleFns.push(fn);
+    }
 
+    BackgroundKmlReader.prototype._idle=function(){
 
+    	if(this._idleFns&&this._idleFns.length>0){
 
+	    	var fns=me._idleFns.slice(0);
+			me._idleFns=[];
+	        fns.forEach(function(fn){
+	            fn();
+	        });
+	    }
 
-
+    }
 
 	 BackgroundKmlReader.prototype._filter = function(item) {
         if (this._filters) {
