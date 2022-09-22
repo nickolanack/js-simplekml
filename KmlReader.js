@@ -199,7 +199,7 @@ var KmlReader = (function() {
         var dataList = markerNodes.map(function() {
             return null;
         });
-        
+
 
         /**
          * the following processes markers in batches of 1000, using a chained timeout call 
@@ -213,10 +213,10 @@ var KmlReader = (function() {
                 return KmlReader.ParseDomMarker(markerDomNode, getStyle);
             }));
 
-            
+
             dataList.splice(i, markerDomNodes.length, filteredData);
             filteredData.forEach(function(data, index){
-                callback(data, dataList, index+offset);
+                callback(data, dataList.length, index+offset);
                 me._scheduleIdle();
             });
             offset+=filteredData.length;
@@ -239,7 +239,7 @@ var KmlReader = (function() {
         }
         var polygonData = me._filter(KmlReader.ParseDomPolygons(kml));
         polygonData.forEach(function(p, i) {
-            callback(p, polygonData, i);
+            callback(p, polygonData.length, i);
             me._scheduleIdle();
         });
         me._scheduleIdle();
@@ -253,7 +253,7 @@ var KmlReader = (function() {
         }
         var lineData = me._filter(KmlReader.ParseDomLines(kml));
         lineData.forEach(function(p, i) {
-            callback(p, lineData, i);
+            callback(p, lineData.length, i);
             me._scheduleIdle();
         });
         me._scheduleIdle();
@@ -268,7 +268,7 @@ var KmlReader = (function() {
         }
         var overlayData = me._filter(KmlReader.ParseDomGroundOverlays(kml));
         overlayData.forEach(function(o, i) {
-            callback(o, overlayData, i);
+            callback(o, overlayData.length, i);
             me._scheduleIdle();
         });
         me._scheduleIdle();
@@ -282,7 +282,7 @@ var KmlReader = (function() {
         }
         var linkData = me._filter(KmlReader.ParseDomLinks(kml));
         linkData.forEach(function(p, i) {
-            callback(p, linkData, i);
+            callback(p, linkData.length, i);
             me._scheduleIdle();
         });
         me._scheduleIdle();
