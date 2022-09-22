@@ -10,7 +10,9 @@ var reader = null;
 var loading=false;
 var callIdle=function(){};
 
-onmessage = function(e) {
+var _queue=[];
+
+var handleMessage = function(e) {
 
 
     if ((!reader)&&(!loading)) {
@@ -48,9 +50,19 @@ onmessage = function(e) {
         }
 
         reader = new KmlReader(new DOMParser().parseFromString(e.data));
+        loading=false;
+
+        var q=_queue.slice(0);
+        _queue=[];
+        q.forEach(handleMessage);
+
         return;
     }
 
+    if(loading){
+    	_queue.push(e);
+    	return;
+    }
 
     if(e.data==='idle'){
     	callIdle=function(){
@@ -83,6 +95,11 @@ onmessage = function(e) {
     }
 
 }
+
+onmessage=handleMessage
+
+
+
 },{"@xmldom/xmldom":6}],2:[function(require,module,exports){
 'use strict'
 
