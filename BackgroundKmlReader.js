@@ -5,12 +5,13 @@
  */
 var BackgroundKmlReader = (function() {
 
-
+	var current=document.currentScript.src;
+	var workerScript=current.replace('BackgroundKmlReader.js', 'KmlReaderWorker.js');
 
 
 	var BackgroundKmlReader = function(kml) {
 
-		this._worker=new Worker(userFunctionWorker);
+		this._worker=new Worker(workerScript);
 		worker.postMessage(kml);
 		this._handlers={};
 		var me=this;
