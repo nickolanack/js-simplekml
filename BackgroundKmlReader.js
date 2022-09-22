@@ -42,22 +42,27 @@ var BackgroundKmlReader = (function() {
 
 	BackgroundKmlReader.prototype.parseMarkers = function(callback) {
 		this._execute('parseMarkers', callback);
+		return this;
 	};
 
 	BackgroundKmlReader.prototype.parsePolygons = function(callback) {
 		this._execute('parsePolygons', callback);
+		return this;
 	};
 
 	BackgroundKmlReader.prototype.parseLines = function(callback) {
 		this._execute('parseLines', callback);
+		return this;
 	};
 
 	BackgroundKmlReader.prototype.parseNetworklinks = function(callback) {
 		this._execute('parseNetworklinks', callback);
+		return this;
 	};
 
 	BackgroundKmlReader.prototype.parseGroundOverlays = function(callback) {
 		this._execute('parseGroundOverlays', callback);
+		return this;
 	};
 
 
