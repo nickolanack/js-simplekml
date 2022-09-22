@@ -17,17 +17,17 @@ onmessage = function(e) {
 			postMessage({
 				method: e.data,
 				feature: data,
-				total:total,
-				index:index
+				total: total,
+				index: index
 			});
 
-			if(index==total-1){
+			if (index == total - 1) {
 				postMessage({
 					method: e.data,
 					result: 'done'
 				});
 			}
-		}
+		});
 
 	}
 
