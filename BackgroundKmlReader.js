@@ -14,6 +14,8 @@ var BackgroundKmlReader = (function() {
 		this._worker=new Worker(workerScript);
 		this._worker.postMessage(kml);
 		this._handlers={};
+		this._idleFns=[];
+		this._filters=[];
 		var me=this;
 		this._worker.onmessage=function(e){
 
@@ -38,6 +40,14 @@ var BackgroundKmlReader = (function() {
 
 
 		};
+	};
+
+	BackgroundKmlReader.prototype.remove = function() {
+		this._worker.terminate();
+		delete this._worker;
+		delete this._handlers;
+		delete this._idleFns;
+		delete this._filters;
 	};
 
 	BackgroundKmlReader.prototype._execute = function(method, callback) {
@@ -74,16 +84,13 @@ var BackgroundKmlReader = (function() {
 
 
 	BackgroundKmlReader.prototype.runOnceOnIdle = function(fn){
-        if(!this._idleFns){
-            this._idleFns=[];
-        }
         this._worker.postMessage('idle');
         this._idleFns.push(fn);
     }
 
     BackgroundKmlReader.prototype._idle=function(){
 
-    	if(this._idleFns&&this._idleFns.length>0){
+    	if(this._idleFns.length>0){
 
 	    	var fns=this._idleFns.slice(0);
 			this._idleFns=[];
@@ -95,35 +102,28 @@ var BackgroundKmlReader = (function() {
     }
 
 	 BackgroundKmlReader.prototype._filter = function(item) {
-        if (this._filters) {
 
+        var bool = true;
+        this._filters.forEach(function(f) {
 
-            var bool = true;
-            this._filters.forEach(function(f) {
-
-                if (typeof f != 'function' && f.type) {
-                    if (item.type === f.type) {
-                        if (f.filter(item) === false) {
-                            bool = false;
-                        }
+            if (typeof f != 'function' && f.type) {
+                if (item.type === f.type) {
+                    if (f.filter(item) === false) {
+                        bool = false;
                     }
-                    return;
-
                 }
+                return;
 
-                if (f(item) === false) {
-                    bool = false;
-                }
-            });
-            return bool;
-        }
-        return true
+            }
+
+            if (f(item) === false) {
+                bool = false;
+            }
+        });
+        return bool;
+
     };
     BackgroundKmlReader.prototype.addFilter = function(type, fn) {
-
-        if (!this._filters) {
-            this._filters = [];
-        }
 
         if (typeof type == 'function') {
             fn = type;
