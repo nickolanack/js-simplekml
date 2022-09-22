@@ -136,7 +136,7 @@ var KmlReader = (function() {
 
         var documentData = me._filter(KmlReader.ParseDomDocuments(kml));
         documentData.forEach(function(p, i) {
-            callback(p, documentData, i);
+            callback(p, documentData.length, i);
             me._scheduleIdle();
         });
         me._scheduleIdle();
@@ -151,7 +151,7 @@ var KmlReader = (function() {
         }
         var folderData = me._filter(KmlReader.ParseDomFolders(kml));
         folderData.forEach(function(p, i) {
-            callback(p, folderData, i);
+            callback(p, folderData.length, i);
             me._scheduleIdle();
         });
         me._scheduleIdle();
