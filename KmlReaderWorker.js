@@ -13,6 +13,39 @@ onmessage = function(e) {
 
 
     if (!reader) {
+
+    	if(e.data.indexOf('<')!=0){
+    		//assume this is a url!
+            var xhttp = new XMLHttpRequest();
+
+            xhttp.onload = function() {
+            	reader = new KmlReader(new DOMParser().parseFromString(xhttp.responseText));
+            };
+
+            xhttp.onerror = function() {
+            };
+
+            xhttp.onprogress = function(ev) {
+            };
+
+
+            xhttp.ontimeout = function() {
+            };
+            xhttp.onabort = function() {
+            };
+
+
+            xhttp.open('POST', e.data);
+            xhttp.responseType = 'text'
+            xhttp.setRequestHeader("Content-Type", 'application/x-www-form-urlencoded');
+
+            //xhttp.setRequestHeader("Cache-Control", 'no-cache');
+
+            xhttp.send();
+
+            return;
+        }
+
         reader = new KmlReader(new DOMParser().parseFromString(e.data));
         return;
     }
