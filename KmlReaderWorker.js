@@ -38,12 +38,12 @@ onmessage = function(e) {
                 index: index
             });
 
-            if (index == total - 1) {
-                postMessage({
-                    method: e.data,
-                    result: 'done'
-                });
-            }
+            // if (index == total - 1) {
+            //     postMessage({
+            //         method: e.data,
+            //         result: 'done'
+            //     });
+            // }
         });
 
     }
