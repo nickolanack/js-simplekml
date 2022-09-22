@@ -16,14 +16,18 @@ var handleMessage = function(e) {
 
 
     if ((!reader)&&(!loading)) {
-
+    	loading=true;
     	if(e.data.indexOf('<')!=0){
     		//assume this is a url!
-    		loading=true;
+    		
             var xhttp = new XMLHttpRequest();
 
             xhttp.onload = function() {
             	reader = new KmlReader(new DOMParser().parseFromString(xhttp.responseText));
+            	loading=false;
+		        var q=_queue.slice(0);
+		        _queue=[];
+		        q.forEach(handleMessage);
             };
 
             xhttp.onerror = function() {
