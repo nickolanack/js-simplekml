@@ -1,5 +1,5 @@
 importScripts('KmlReader.js');
-
+importScripts('xmldom.js');
 
 var reader = null;
 
