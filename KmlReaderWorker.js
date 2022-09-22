@@ -6,7 +6,7 @@ var reader = null;
 onmessage = function(e) {
 
 
-	if (!userFunction) {
+	if (!reader) {
 		reader = new KmlReader(e.data);
 		return;
 	}
