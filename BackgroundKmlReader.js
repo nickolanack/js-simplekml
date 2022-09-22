@@ -121,5 +121,5 @@ var BackgroundKmlReader = (function() {
 
 
 
-});
+})();
 
