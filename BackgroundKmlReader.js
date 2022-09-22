@@ -85,8 +85,8 @@ var BackgroundKmlReader = (function() {
 
     	if(this._idleFns&&this._idleFns.length>0){
 
-	    	var fns=me._idleFns.slice(0);
-			me._idleFns=[];
+	    	var fns=this._idleFns.slice(0);
+			this._idleFns=[];
 	        fns.forEach(function(fn){
 	            fn();
 	        });
