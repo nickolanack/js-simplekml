@@ -296,22 +296,25 @@ var KmlReader = (function() {
      KmlReader.prototype._filterItem = function(item) {
 
         var bool = true;
-        this._filters.forEach(function(f) {
+        if(this._filters){
+            this._filters.forEach(function(f) {
 
-            if (typeof f != 'function' && f.type) {
-                if (item.type === f.type) {
-                    if (f.filter(item) === false) {
-                        bool = false;
+                if (typeof f != 'function' && f.type) {
+                    if (item.type === f.type) {
+                        if (f.filter(item) === false) {
+                            bool = false;
+                        }
                     }
+                    return;
+
                 }
-                return;
 
-            }
+                if (f(item) === false) {
+                    bool = false;
+                }
 
-            if (f(item) === false) {
-                bool = false;
-            }
-        });
+            });
+        }
         return bool
     };
 
