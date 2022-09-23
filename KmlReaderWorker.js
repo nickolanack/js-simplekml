@@ -34,7 +34,7 @@ var handleMessage = function(e) {
             };
 
             xhttp.onprogress = function(ev) {
-            	postMessage({'progress', loaded:ev.loaded, total:ev.total});
+            	postMessage({'progress':{loaded:ev.loaded, total:ev.total}});
             };
 
 
