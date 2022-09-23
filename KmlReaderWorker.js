@@ -19,7 +19,7 @@ var handleMessage = function(e) {
     	loading=true;
     	if(e.data.indexOf('<')!=0){
     		//assume this is a url!
-    		
+
             var xhttp = new XMLHttpRequest();
 
             xhttp.onload = function() {
@@ -34,6 +34,7 @@ var handleMessage = function(e) {
             };
 
             xhttp.onprogress = function(ev) {
+            	postMessage({'progress', loaded:ev.loaded, total:ev.total});
             };
 
 
