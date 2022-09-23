@@ -19,9 +19,9 @@ Includes web implementation for parsing kml files in the background using a Web 
   });
 
 ```
-## Background Webworker Usage
-uses BackgroundKmlReader, which provides exactly the same methods as KmlReader
-providing the url to a kml (instead of the kml string) moves the download into the background thread as well
+## Background Web Worker Usage
+Use BackgroundKmlReader instead of KmlReader to move kml parsing into a background thread, his class provides exactly the same methods as KmlReader.
+Providing the remote url for a kml (instead of the kml string), in the constructor to BackgroundKmlReader, additionally moves the download into the background thread.
 
 ```js
 (new BackgroundKmlReader(kmlUrl /*accepts url, or kml string but not DOM*/))
