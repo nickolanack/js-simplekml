@@ -256,11 +256,14 @@ var KmlReader = (function() {
             callback = kml;
             kml = me._kml;
         }
-        var lineData = me._filter(KmlReader.ParseDomLines(kml));
-        lineData.forEach(function(p, i) {
-            callback(p, lineData.length, i);
+
+        KmlReader.ParseDomLines(kml, function(p, i, len){
+            if(me._filterItem(p)){
+                callback(p, len, i);
+            }
             me._scheduleIdle();
         });
+
         me._scheduleIdle();
 
         return me;
@@ -450,7 +453,7 @@ var KmlReader = (function() {
         return link;
     };
 
-    KmlReader.ParseDomLines = function(xmlDom) {
+    KmlReader.ParseDomLines = function(xmlDom, callback) {
         var lines = [];
         var lineDomNodes = KmlReader.ParseDomItems(xmlDom, 'LineString');
 
@@ -490,29 +493,15 @@ var KmlReader = (function() {
             polygonData.lineOpacity = rgb.opacity;
             polygonData.lineColor = rgb.color;
 
-            lines.push(polygonData);
+            if(callback){
+                callback(polygonData, i, lineDomNodes.length);
+            }else{
+                lines.push(polygonData);
+            }
         }
 
-        return lines;
-    };
-
-    KmlReader.ParseDomGroundOverlays = function(xmlDom) {
-        var lines = [];
-        var lineDomNodes = KmlReader.ParseDomItems(xmlDom, 'GroundOverlay');
-        var i;
-        for (i = 0; i < lineDomNodes.length; i++) {
-
-            var node = lineDomNodes[i];
-
-            var polygonData = _append({
-                    type: 'imageoverlay',
-                    icon: KmlReader.ParseDomIcon(node),
-                    bounds: KmlReader.ParseDomBounds(node)
-                },
-                KmlReader.ParseNonSpatialDomData(node, {})
-            );
-
-            lines.push(polygonData);
+        if(callback){
+            return;
         }
 
         return lines;
@@ -579,6 +568,28 @@ var KmlReader = (function() {
         }
 
         return polygons;
+    };
+
+    KmlReader.ParseDomGroundOverlays = function(xmlDom) {
+        var lines = [];
+        var lineDomNodes = KmlReader.ParseDomItems(xmlDom, 'GroundOverlay');
+        var i;
+        for (i = 0; i < lineDomNodes.length; i++) {
+
+            var node = lineDomNodes[i];
+
+            var polygonData = _append({
+                    type: 'imageoverlay',
+                    icon: KmlReader.ParseDomIcon(node),
+                    bounds: KmlReader.ParseDomBounds(node)
+                },
+                KmlReader.ParseNonSpatialDomData(node, {})
+            );
+
+            lines.push(polygonData);
+        }
+
+        return lines;
     };
 
     KmlReader.ParseDomMarkers = function(xmlDom) {
