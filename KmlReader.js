@@ -242,7 +242,7 @@ var KmlReader = (function() {
             kml = me._kml;
         }
         KmlReader.ParseDomPolygons(kml, function(p, i, len){
-            if(me._filterItem(p)){
+            if(me._filterItem(p, i)){
                 callback(p, len, i);
             }
             me._scheduleIdle();
@@ -250,7 +250,7 @@ var KmlReader = (function() {
         me._scheduleIdle();
         return me;
     };
-    KmlReader.prototype.parseLines = function(kml, callback) {
+    KmlReader.prototype.parseLines = function(kml, cßallback) {
         var me = this;
         if (!callback) {
             callback = kml;
@@ -258,7 +258,7 @@ var KmlReader = (function() {
         }
 
         KmlReader.ParseDomLines(kml, function(p, i, len){
-            if(me._filterItem(p)){
+            if(me._filterItem(p, i)){
                 callback(p, len, i);
             }
             me._scheduleIdle();
@@ -296,7 +296,7 @@ var KmlReader = (function() {
         me._scheduleIdle();
         return me;
     };
-     KmlReader.prototype._filterItem = function(item) {
+     KmlReader.prototype._filterItem = function(item, i) {
 
         var bool = true;
         if(this._filters){
@@ -304,7 +304,7 @@ var KmlReader = (function() {
 
                 if (typeof f != 'function' && f.type) {
                     if (item.type === f.type) {
-                        if (f.filter(item) === false) {
+                        if (f.filter(item, i) === false) {
                             bool = false;
                         }
                     }
@@ -312,7 +312,7 @@ var KmlReader = (function() {
 
                 }
 
-                if (f(item) === false) {
+                if (f(item, i) === false) {
                     bool = false;
                 }
 
@@ -325,14 +325,14 @@ var KmlReader = (function() {
         var me = this;
         var filtered = [];
         if (me._filters && a && a.length) {
-            a.forEach(function(item) {
+            a.forEach(function(item, i) {
 
                 var bool = true;
                 me._filters.forEach(function(f) {
 
                     if (typeof f != 'function' && f.type) {
                         if (item.type === f.type) {
-                            if (f.filter(item) === false) {
+                            if (f.filter(item, i) === false) {
                                 bool = false;
                             }
                         }
@@ -340,7 +340,7 @@ var KmlReader = (function() {
 
                     }
 
-                    if (f(item) === false) {
+                    if (f(item, i) === false) {
                         bool = false;
                     }
                 });

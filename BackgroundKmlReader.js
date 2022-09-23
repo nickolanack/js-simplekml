@@ -38,7 +38,7 @@ var BackgroundKmlReader = (function() {
 				return;
 			}
 
-			if(me._filter(e.data.feature)){
+			if(me._filter(e.data.feature, e.data.index)){
 				me._handlers[e.data.method](e.data.feature, e.data.total, e.data.index);
 			}
 
@@ -105,14 +105,14 @@ var BackgroundKmlReader = (function() {
 
     }
 
-	 BackgroundKmlReader.prototype._filter = function(item) {
+	 BackgroundKmlReader.prototype._filter = function(item, i) {
 
         var bool = true;
         this._filters.forEach(function(f) {
 
             if (typeof f != 'function' && f.type) {
                 if (item.type === f.type) {
-                    if (f.filter(item) === false) {
+                    if (f.filter(item, i) === false) {
                         bool = false;
                     }
                 }
@@ -120,7 +120,7 @@ var BackgroundKmlReader = (function() {
 
             }
 
-            if (f(item) === false) {
+            if (f(item, i) === false) {
                 bool = false;
             }
         });
