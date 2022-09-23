@@ -23,6 +23,8 @@ Includes web implementation for parsing kml files in the background using a Web 
 Use BackgroundKmlReader instead of KmlReader to move kml parsing into a background thread, his class provides exactly the same methods as KmlReader.
 Providing the remote url for a kml (instead of the kml string), in the constructor to BackgroundKmlReader, additionally moves the download into the background thread.
 
+BackgroundKmlReader includes, and uses @xmldom/xmldom
+
 ```js
 (new BackgroundKmlReader(kmlUrl /*accepts url, or kml string but not DOM*/))
   //...
