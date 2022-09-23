@@ -250,7 +250,7 @@ var KmlReader = (function() {
         me._scheduleIdle();
         return me;
     };
-    KmlReader.prototype.parseLines = function(kml, cßallback) {
+    KmlReader.prototype.parseLines = function(kml, callback) {
         var me = this;
         if (!callback) {
             callback = kml;
