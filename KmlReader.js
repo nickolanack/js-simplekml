@@ -511,6 +511,7 @@ var KmlReader = (function() {
 
             var node = polygonDomNodes[i];
 
+            polygonDomNodes[i]=null; //clear memory
 
             var attributes = KmlReader.ParseNonSpatialDomData(node, {});
             var styleName = KmlReader.ParseDomStyle(node);
