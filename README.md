@@ -2,7 +2,7 @@
 A Javascript kml parser, for web or node.
 Includes web implementation for parsing kml files in the background using a Web Worker 
 
-#Usage
+## Usage
 ```js
 //simple usage in a web browser
 (new KmlReader(xmlString))
@@ -19,9 +19,9 @@ Includes web implementation for parsing kml files in the background using a Web 
   });
 
 ```
-#Background Webworker Usage
+## Background Webworker Usage
 uses BackgroundKmlReader, which provides exactly the same methods as KmlReader
-```
+```js
 (new BackgroundKmlReader(kmlUrl))
   //...
   .parsePolygons(function(poly){
@@ -31,7 +31,7 @@ uses BackgroundKmlReader, which provides exactly the same methods as KmlReader
 ```
 
 
-#Usage in node js, requires xmldom
+## Usage in node js, requires xmldom
 ```js
 
 const KmlReader=require('../KmlReader.js');
