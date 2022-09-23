@@ -24,6 +24,10 @@ var BackgroundKmlReader = (function() {
 				return;
 			}
 
+			if(e.data.progress){
+
+				return;
+			}
 
 			if(!me._handlers[e.data.method]){
 				throw 'Unexpected message: '+JSON.stringify(e.data);
