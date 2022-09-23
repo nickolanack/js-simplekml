@@ -21,8 +21,10 @@ Includes web implementation for parsing kml files in the background using a Web 
 ```
 ## Background Webworker Usage
 uses BackgroundKmlReader, which provides exactly the same methods as KmlReader
+providing the url to a kml (instead of the kml string) moves the download into the background thread as well
+
 ```js
-(new BackgroundKmlReader(kmlUrl))
+(new BackgroundKmlReader(kmlUrl /*accepts url, or kml string but not DOM*/))
   //...
   .parsePolygons(function(poly){
   
