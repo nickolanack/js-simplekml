@@ -20,7 +20,7 @@ Includes web implementation for parsing kml files in the background using a Web 
 
 ```
 ## Background Web Worker Usage
-Use BackgroundKmlReader instead of KmlReader to move kml parsing into a background thread, his class provides exactly the same methods as KmlReader.
+Use BackgroundKmlReader instead of KmlReader to move kml parsing into a background thread, this class provides exactly the same methods as KmlReader.
 Providing the remote url for a kml (instead of the kml string), in the constructor to BackgroundKmlReader, additionally moves the download into the background thread.
 
 BackgroundKmlReader includes, and uses @xmldom/xmldom
