@@ -1,5 +1,6 @@
 # js-simplekml
-A Javascript kml parser
+A Javascript kml parser, for web or node.
+Includes web implementation for parsing kml files in the background using a Web Worker 
 
 #Usage
 ```js
@@ -18,6 +19,17 @@ A Javascript kml parser
   });
 
 ```
+#Background Webworker Usage
+uses BackgroundKmlReader, which provides exactly the same methods as KmlReader
+```
+(new BackgroundKmlReader(kmlUrl))
+  //...
+  .parsePolygons(function(poly){
+  
+  });
+  // ...
+```
+
 
 #Usage in node js, requires xmldom
 ```js
