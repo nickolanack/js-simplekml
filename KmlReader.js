@@ -241,9 +241,10 @@ var KmlReader = (function() {
             callback = kml;
             kml = me._kml;
         }
-        var polygonData = me._filter(KmlReader.ParseDomPolygons(kml));
-        polygonData.forEach(function(p, i) {
-            callback(p, polygonData.length, i);
+        KmlReader.ParseDomPolygons(kml, function(p, i, len){
+            if(me._filterItem(p)){
+                callback(p, len, i);
+            }
             me._scheduleIdle();
         });
         me._scheduleIdle();
@@ -292,6 +293,28 @@ var KmlReader = (function() {
         me._scheduleIdle();
         return me;
     };
+     KmlReader.prototype._filterItem = function(item) {
+
+        var bool = true;
+        this._filters.forEach(function(f) {
+
+            if (typeof f != 'function' && f.type) {
+                if (item.type === f.type) {
+                    if (f.filter(item) === false) {
+                        bool = false;
+                    }
+                }
+                return;
+
+            }
+
+            if (f(item) === false) {
+                bool = false;
+            }
+        });
+        return bool
+    };
+
     KmlReader.prototype._filter = function(a) {
         var me = this;
         var filtered = [];
@@ -492,7 +515,7 @@ var KmlReader = (function() {
         return lines;
     };
 
-    KmlReader.ParseDomPolygons = function(xmlDom) {
+    KmlReader.ParseDomPolygons = function(xmlDom, callback) {
         var polygons = [];
         var polygonDomNodes = KmlReader.ParseDomItems(xmlDom, 'Polygon');
 
@@ -541,9 +564,17 @@ var KmlReader = (function() {
             polygonData.polyOpacity = (polygonData.fill) ? polyRGB.opacity : 0;
             polygonData.polyColor = polyRGB.color;
 
-
-            polygons.push(polygonData);
+            if(callback){
+                callback(polygonData, i, polygonDomNodes.length);
+            }else{
+                polygons.push(polygonData);
+            }
         }
+
+        if(callback){
+            return;
+        }
+
         return polygons;
     };
 
