@@ -96,6 +96,10 @@ var KmlReader = (function() {
 
     }
 
+    KmlReader.prototype.remove=function(){
+        delete this._kml;
+    }
+
 
     KmlReader.prototype.runOnceOnIdle = function(fn){
         if(!this._idleFns){
@@ -136,7 +140,7 @@ var KmlReader = (function() {
 
         var documentData = me._filter(KmlReader.ParseDomDocuments(kml));
         documentData.forEach(function(p, i) {
-            callback(p, documentData, i);
+            callback(p, documentData.length, i);
             me._scheduleIdle();
         });
         me._scheduleIdle();
@@ -151,7 +155,7 @@ var KmlReader = (function() {
         }
         var folderData = me._filter(KmlReader.ParseDomFolders(kml));
         folderData.forEach(function(p, i) {
-            callback(p, folderData, i);
+            callback(p, folderData.length, i);
             me._scheduleIdle();
         });
         me._scheduleIdle();
@@ -199,7 +203,7 @@ var KmlReader = (function() {
         var dataList = markerNodes.map(function() {
             return null;
         });
-        
+
 
         /**
          * the following processes markers in batches of 1000, using a chained timeout call 
@@ -213,10 +217,10 @@ var KmlReader = (function() {
                 return KmlReader.ParseDomMarker(markerDomNode, getStyle);
             }));
 
-            
+
             dataList.splice(i, markerDomNodes.length, filteredData);
             filteredData.forEach(function(data, index){
-                callback(data, dataList, index+offset);
+                callback(data, dataList.length, index+offset);
                 me._scheduleIdle();
             });
             offset+=filteredData.length;
@@ -237,9 +241,10 @@ var KmlReader = (function() {
             callback = kml;
             kml = me._kml;
         }
-        var polygonData = me._filter(KmlReader.ParseDomPolygons(kml));
-        polygonData.forEach(function(p, i) {
-            callback(p, polygonData, i);
+        KmlReader.ParseDomPolygons(kml, function(p, i, len){
+            if(me._filterItem(p, i)){
+                callback(p, len, i);
+            }
             me._scheduleIdle();
         });
         me._scheduleIdle();
@@ -251,11 +256,14 @@ var KmlReader = (function() {
             callback = kml;
             kml = me._kml;
         }
-        var lineData = me._filter(KmlReader.ParseDomLines(kml));
-        lineData.forEach(function(p, i) {
-            callback(p, lineData, i);
+
+        KmlReader.ParseDomLines(kml, function(p, i, len){
+            if(me._filterItem(p, i)){
+                callback(p, len, i);
+            }
             me._scheduleIdle();
         });
+
         me._scheduleIdle();
 
         return me;
@@ -268,7 +276,7 @@ var KmlReader = (function() {
         }
         var overlayData = me._filter(KmlReader.ParseDomGroundOverlays(kml));
         overlayData.forEach(function(o, i) {
-            callback(o, overlayData, i);
+            callback(o, overlayData.length, i);
             me._scheduleIdle();
         });
         me._scheduleIdle();
@@ -288,24 +296,49 @@ var KmlReader = (function() {
         }
         var linkData = me._filter(KmlReader.ParseDomLinks(kml));
         linkData.forEach(function(p, i) {
-            callback(p, linkData, i);
+            callback(p, linkData.length, i);
             me._scheduleIdle();
         });
         me._scheduleIdle();
         return me;
     };
+     KmlReader.prototype._filterItem = function(item, i) {
+
+        var bool = true;
+        if(this._filters){
+            this._filters.forEach(function(f) {
+
+                if (typeof f != 'function' && f.type) {
+                    if (item.type === f.type) {
+                        if (f.filter(item, i) === false) {
+                            bool = false;
+                        }
+                    }
+                    return;
+
+                }
+
+                if (f(item, i) === false) {
+                    bool = false;
+                }
+
+            });
+        }
+        return bool
+    };
+
     KmlReader.prototype._filter = function(a) {
         var me = this;
         var filtered = [];
         if (me._filters && a && a.length) {
-            a.forEach(function(item) {
+            a.forEach(function(item, i) {
 
                 var bool = true;
                 me._filters.forEach(function(f) {
 
                     if (typeof f != 'function' && f.type) {
                         if (item.type === f.type) {
-                            if (f.filter(item) === false) {
+                            if (f.filter(item, i) === false) {
                                 bool = false;
                             }
                         }
@@ -313,7 +346,7 @@ var KmlReader = (function() {
 
                     }
 
-                    if (f(item) === false) {
+                    if (f(item, i) === false) {
                         bool = false;
                     }
                 });
@@ -426,7 +459,7 @@ var KmlReader = (function() {
         return link;
     };
 
-    KmlReader.ParseDomLines = function(xmlDom) {
+    KmlReader.ParseDomLines = function(xmlDom, callback) {
         var lines = [];
         var lineDomNodes = KmlReader.ParseDomItems(xmlDom, 'LineString');
 
@@ -466,35 +499,21 @@ var KmlReader = (function() {
             polygonData.lineOpacity = rgb.opacity;
             polygonData.lineColor = rgb.color;
 
-            lines.push(polygonData);
+            if(callback){
+                callback(polygonData, i, lineDomNodes.length);
+            }else{
+                lines.push(polygonData);
+            }
+        }
+
+        if(callback){
+            return;
         }
 
         return lines;
     };
 
-    KmlReader.ParseDomGroundOverlays = function(xmlDom) {
-        var lines = [];
-        var lineDomNodes = KmlReader.ParseDomItems(xmlDom, 'GroundOverlay');
-        var i;
-        for (i = 0; i < lineDomNodes.length; i++) {
-
-            var node = lineDomNodes[i];
-
-            var polygonData = _append({
-                    type: 'imageoverlay',
-                    icon: KmlReader.ParseDomIcon(node),
-                    bounds: KmlReader.ParseDomBounds(node)
-                },
-                KmlReader.ParseNonSpatialDomData(node, {})
-            );
-
-            lines.push(polygonData);
-        }
-
-        return lines;
-    };
-
-    KmlReader.ParseDomPolygons = function(xmlDom) {
+    KmlReader.ParseDomPolygons = function(xmlDom, callback) {
         var polygons = [];
         var polygonDomNodes = KmlReader.ParseDomItems(xmlDom, 'Polygon');
 
@@ -513,6 +532,7 @@ var KmlReader = (function() {
 
             var node = polygonDomNodes[i];
 
+            polygonDomNodes[i]=null; //clear memory
 
             var attributes = KmlReader.ParseNonSpatialDomData(node, {});
             var styleName = KmlReader.ParseDomStyle(node);
@@ -542,10 +562,40 @@ var KmlReader = (function() {
             polygonData.polyOpacity = (polygonData.fill) ? polyRGB.opacity : 0;
             polygonData.polyColor = polyRGB.color;
 
-
-            polygons.push(polygonData);
+            if(callback){
+                callback(polygonData, i, polygonDomNodes.length);
+            }else{
+                polygons.push(polygonData);
+            }
         }
+
+        if(callback){
+            return;
+        }
+
         return polygons;
+    };
+
+    KmlReader.ParseDomGroundOverlays = function(xmlDom) {
+        var lines = [];
+        var lineDomNodes = KmlReader.ParseDomItems(xmlDom, 'GroundOverlay');
+        var i;
+        for (i = 0; i < lineDomNodes.length; i++) {
+
+            var node = lineDomNodes[i];
+
+            var polygonData = _append({
+                    type: 'imageoverlay',
+                    icon: KmlReader.ParseDomIcon(node),
+                    bounds: KmlReader.ParseDomBounds(node)
+                },
+                KmlReader.ParseNonSpatialDomData(node, {})
+            );
+
+            lines.push(polygonData);
+        }
+
+        return lines;
     };
 
     KmlReader.ParseDomMarkers = function(xmlDom) {
