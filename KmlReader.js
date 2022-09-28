@@ -275,6 +275,12 @@ var KmlReader = (function() {
         return me;
     };
     KmlReader.prototype.parseNetworklinks = function(kml, callback) {
+        /**
+         * alias method backward-compatibility
+         */
+        return this.parseNetworkLinks.apply(this, arguments);
+    }
+    KmlReader.prototype.parseNetworkLinks = function(kml, callback) {
         var me = this;
         if (!callback) {
             callback = kml;
