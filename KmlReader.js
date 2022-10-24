@@ -993,7 +993,11 @@ var KmlReader = (function() {
                 }]);
                 mm_trace();
             } else {
-                items.push(parent);
+
+                if(node.parentNode.tagName!=='MultiGeometry'||node.parentNode.childNodes.item(0)===node){
+
+                    items.push(parent);
+                }
             }
         }
         return items;
