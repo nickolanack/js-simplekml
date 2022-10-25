@@ -23,7 +23,16 @@ var handleMessage = function(e) {
             var xhttp = new XMLHttpRequest();
 
             xhttp.onload = function() {
-            	reader = new KmlReader(new DOMParser().parseFromString(xhttp.responseText));
+            	var xmlDom=new DOMParser().parseFromString(xhttp.responseText)
+
+            	if(!xmlDom){
+
+            		postMessage({'error':'Failed to parse xml'});
+
+            		return;
+            	}
+
+            	reader = new KmlReader(xmlDom);
             	loading=false;
 		        var q=_queue.slice(0);
 		        _queue=[];
@@ -54,7 +63,14 @@ var handleMessage = function(e) {
             return;
         }
 
-        reader = new KmlReader(new DOMParser().parseFromString(e.data));
+
+        var xmlDom=new DOMParser().parseFromString(e.data)
+        if(!xmlDom){
+    		postMessage({'error':'Failed to parse xml'});
+    		return;
+    	}
+
+        reader = new KmlReader(xmlDom);
         loading=false;
 
         var q=_queue.slice(0);
