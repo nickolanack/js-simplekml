@@ -888,7 +888,8 @@ var KmlReader = (function() {
         var data={};
 
         var regionData = xmlDom.getElementsByTagName('Region');
-        for (i = 0; i < regionData.length; i++) {
+
+        for (var i = 0; i < regionData.length; i++) {
             data.region={
                 bounds: KmlReader.ParseDomBounds(regionData.item(0)),
                 lod: KmlReader.ParseDomLOD(regionData.item(0))
