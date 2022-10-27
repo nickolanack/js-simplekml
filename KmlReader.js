@@ -890,7 +890,7 @@ var KmlReader = (function() {
         var regionData = xmlDom.getElementsByTagName('Region');
         for (i = 0; i < regionData.length; i++) {
             data.region={
-                bounds: KmlReader.ParseDomBounds(regionData.item(0))
+                bounds: KmlReader.ParseDomBounds(regionData.item(0)),
                 lod.ParseDOMLOD(regionData.item(0));
             }
 
