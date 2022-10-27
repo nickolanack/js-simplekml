@@ -435,6 +435,7 @@ var KmlReader = (function() {
         for (i = 0; i < linkDomNodes.length; i++) {
             var node = linkDomNodes.item(i);
             var linkData = _append({}, KmlReader.ParseDomLink(node), KmlReader.ParseNonSpatialDomData(node, {}));
+            var linkData = _append({}, KmlReader.ParseDomLink(node), KmlReader.ParseRegionDomData(node, {}));
 
             var transform = function(options) {
                 return options;
@@ -745,12 +746,86 @@ var KmlReader = (function() {
         } else {
             west = parseFloat(KmlReader.Value(wests.item(0)));
         }
-        return {
+        var data= {
             north: north,
             south: south,
             east: east,
             west: west
         };
+
+
+
+        //optional 
+
+        var minAltitudes = node.getElementsByTagName('minAltitude');
+
+        if (minAltitudes.length) {
+            data.minAltitude=parseFloat(KmlReader.Value(minAltitudes.item(0)));
+        }
+
+        var maxAltitudes = node.getElementsByTagName('maxAltitude');
+
+        if (maxAltitudes.length) {
+            data.maxAltitude=parseFloat(KmlReader.Value(maxAltitudes.item(0)));
+        }
+         
+
+        return data;
+
+    };
+
+     KmlReader.ParseDomLOD = function(xmlDom) {
+        var lodNodes = xmlDom.getElementsByTagName('Lod');
+        if (!lodNodes.length) {
+            console.warn(['KmlReader. DOM Node did not contain Lod!', {
+                node: xmlDom
+            }]);
+            return null;
+        }
+
+
+        minLodPixels, maxLodPixels, minFadeExtent
+
+        var node = lodNodes.item(0);
+        var minLodPixelsNodes = node.getElementsByTagName('minLodPixels');
+        var maxLodPixelsNodes = node.getElementsByTagName('maxLodPixels');
+        var minFadeExtentNodes = node.getElementsByTagName('minFadeExtent');
+
+
+        var minLodPixels = null;
+        var maxLodPixels = null;
+        var minFadeExtent = null;
+
+
+        if (!minLodPixelsNodes.length) {
+            console.warn(['KmlReader. DOM LatLngBox Node did not contain minLodPixels!', {
+                node: xmlDom
+            }]);
+        } else {
+            minLodPixels = parseFloat(KmlReader.Value(minLodPixelsNodes.item(0)));
+        }
+        if (!maxLodPixelsNodes.length) {
+            console.warn(['KmlReader. DOM LatLngBox Node did not contain maxLodPixels!', {
+                node: xmlDom
+            }]);
+        } else {
+            maxLodPixels = parseFloat(KmlReader.Value(maxLodPixelsNodes.item(0)));
+        }
+        if (!minFadeExtentNodes.length) {
+            console.warn(['KmlReader. DOM LatLngBox Node did not contain minFadeExtent!', {
+                node: xmlDom
+            }]);
+        } else {
+            minFadeExtent = parseFloat(KmlReader.Value(minFadeExtentNodes.item(0)));
+        }
+     
+        var data= {
+            minLodPixels: minLodPixels,
+            maxLodPixels: maxLodPixels,
+            minFadeExtent: minFadeExtent,
+        };
+
+        return data;
 
     };
 
@@ -798,8 +873,37 @@ var KmlReader = (function() {
                 }
             }
         }
+
+  
+        return data;
+  
+    };
+
+     KmlReader.ParseRegionDomData = function(xmlDom, options) {
+        
+        var config = _append({}, {
+               
+        }, options);
+
+        var data={};
+
+        var regionData = xmlDom.getElementsByTagName('Region');
+        for (i = 0; i < regionData.length; i++) {
+            data.region={
+                bounds: KmlReader.ParseDomBounds(regionData.item(0))
+                lod.ParseDOMLOD(regionData.item(0));
+            }
+
+        }
+
+
+
+
+
+
         return data;
     };
+
 
     KmlReader.ParseTag = function(xmlDom) {
         var tags = {
