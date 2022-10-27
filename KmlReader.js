@@ -891,7 +891,7 @@ var KmlReader = (function() {
         for (i = 0; i < regionData.length; i++) {
             data.region={
                 bounds: KmlReader.ParseDomBounds(regionData.item(0)),
-                lod.ParseDOMLOD(regionData.item(0));
+                lod: KmlReader.ParseDomLOD(regionData.item(0));
             }
 
         }
