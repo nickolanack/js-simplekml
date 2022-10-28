@@ -434,8 +434,7 @@ var KmlReader = (function() {
         var i;
         for (i = 0; i < linkDomNodes.length; i++) {
             var node = linkDomNodes.item(i);
-            var linkData = _append({}, KmlReader.ParseDomLink(node), KmlReader.ParseNonSpatialDomData(node, {}));
-            var linkData = _append({}, KmlReader.ParseDomLink(node), KmlReader.ParseRegionDomData(node, {}));
+            var linkData = _append({}, KmlReader.ParseDomLink(node), KmlReader.ParseNonSpatialDomData(node, {}), KmlReader.ParseRegionDomData(node, {}));
 
             var transform = function(options) {
                 return options;
