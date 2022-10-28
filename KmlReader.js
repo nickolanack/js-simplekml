@@ -590,7 +590,7 @@ var KmlReader = (function() {
                     icon: KmlReader.ParseDomIcon(node),
                     bounds: KmlReader.ParseDomBounds(node)
                 },
-                KmlReader.ParseNonSpatialDomData(node, {})
+                KmlReader.ParseNonSpatialDomData(node, {}),
                 KmlReader.ParseRegionDomData(node.parentNode, {})
             );
 
