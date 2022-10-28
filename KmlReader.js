@@ -591,6 +591,7 @@ var KmlReader = (function() {
                     bounds: KmlReader.ParseDomBounds(node)
                 },
                 KmlReader.ParseNonSpatialDomData(node, {})
+                KmlReader.ParseRegionDomData(node.parentNode, {})
             );
 
             lines.push(polygonData);
