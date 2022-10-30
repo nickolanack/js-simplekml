@@ -1103,9 +1103,15 @@ var KmlReader = (function() {
                 mm_trace();
             } else {
 
-                if (node.parentNode.tagName !== 'MultiGeometry' || node.parentNode.childNodes.item(0) === node) {
+                if (node.parentNode.tagName !== 'MultiGeometry'){
 
                     items.push(parent);
+                }
+
+                if (node.parentNode.tagName === 'MultiGeometry'){
+                   if( node.parentNode.getElementsByTagName(tagName)[0] === node){
+                       items.push(parent);
+                   }
                 }
             }
         }
