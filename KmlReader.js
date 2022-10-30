@@ -138,7 +138,7 @@ var KmlReader = (function() {
     }
 
 
-    BackgroundKmlReader.prototype.sortDistanceFromCenter = function(center) {
+    KmlReader.prototype.sortDistanceFromCenter = function(center) {
         this._sortDistanceFromCenter=center;
         return this;
     };
