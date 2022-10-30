@@ -651,7 +651,7 @@ var KmlReader = (function() {
             }, {
                 coordinates: coords[0] //returns an array of google.maps.LatLng
             }, attributes,
-            KmlReader.ParseRegionDomData(node.parentNode, {})
+            KmlReader.ParseRegionDomData(xmlMarkerNode.parentNode, {})
         );
         var icon = styleName;
         if (icon.charAt(0) == '#') {
