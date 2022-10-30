@@ -663,7 +663,7 @@ var KmlReader = (function() {
 
         var coordNodes;
 
-        if(typeof insetTag=='string'&&xmlDom.tagName!==insideTag){
+        if(typeof insideTag=='string'&&xmlDom.tagName!==insideTag){
 
             coordNodes=Array.prototype.concat.apply([], _array(xmlDom.getElementsByTagName(insideTag)).map(function(inside){
                 return _array(inside.getElementsByTagName('coordinates'));
