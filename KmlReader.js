@@ -139,6 +139,15 @@ var KmlReader = (function() {
 
 
     KmlReader.prototype.sortDistanceFromCenter = function(center) {
+
+        if(typeof center.latitude!=='undefined' && typeof center.longitude!=='undefined'){
+            center=[parseFloat(center.latitude), parseFloat(center.longitude)];
+        }
+
+        if(typeof center.lat!=='undefined'&&typeof center.lng!=='undefined'){
+            center=[parseFloat(center.lat), parseFloat(center.lng)];
+        }
+
         this._sortDistanceFromCenter=center;
         return this;
     };
@@ -614,12 +623,12 @@ var KmlReader = (function() {
              }
 
 
-            var alat=ac[0]-me._sortDistanceFromCenter[0];
-            var alng=ac[1]-me._sortDistanceFromCenter[1];
+            var alat=parseFloat(ac[0])-me._sortDistanceFromCenter[0];
+            var alng=parseFloat(ac[1])-me._sortDistanceFromCenter[1];
 
 
-            var blat=bc[0]-me._sortDistanceFromCenter[0];
-            var blng=bc[1]-me._sortDistanceFromCenter[1];
+            var blat=parseFloat(bc[0])-me._sortDistanceFromCenter[0];
+            var blng=parseFloat(bc[1])-me._sortDistanceFromCenter[1];
 
 
             return (alat*alat+alng*alng)-(blat*blat+blng*blng);
