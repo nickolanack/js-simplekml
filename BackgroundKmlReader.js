@@ -94,6 +94,12 @@ var BackgroundKmlReader = (function() {
 
 
 
+	BackgroundKmlReader.prototype.sortDistanceFromCenter = function(center) {
+		this._worker.postMessage({sortDistanceFromCenter:center});
+		return this;
+	};
+
+
 
 	BackgroundKmlReader.prototype.runOnceOnIdle = function(fn){
         this._worker.postMessage('idle');

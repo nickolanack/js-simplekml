@@ -93,6 +93,12 @@ var handleMessage = function(e) {
     	reader.runOnceOnIdle(function(){
     		callIdle();
     	});
+    	return;
+    }
+
+    if(e.data&&e.data.sortDistanceFromCenter){
+    	reader.sortDistanceFromCenter(e.data.sortDistanceFromCenter);
+    	return;
     }
 
 
