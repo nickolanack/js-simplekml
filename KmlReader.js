@@ -50,6 +50,11 @@ var KmlReader = (function() {
     }
 
 
+    var _array=function(a){
+        return Array.prototype.slice.call(a, 0);
+    };
+
+
 
     var KmlReader = function(kml) {
 
@@ -488,7 +493,7 @@ var KmlReader = (function() {
                     lineColor: '#FF000000', // black
                     lineWidth: 1,
                     polyColor: '#77000000', //black semitransparent,
-                    coordinates: KmlReader.ParseDomCoordinates(node) //returns an array of GLatLngs
+                    coordinates: KmlReader.ParseDomCoordinates(node, 'LineString') //returns an array of GLatLngs
                 },
                 attributes,
                 style
@@ -654,8 +659,21 @@ var KmlReader = (function() {
 
 
 
-    KmlReader.ParseDomCoordinates = function(xmlDom) {
-        var coordNodes = xmlDom.getElementsByTagName('coordinates');
+    KmlReader.ParseDomCoordinates = function(xmlDom, insideTag) {
+
+        var coordNodes;
+
+        if(typeof insetTag=='string'&&xmlDom.tagName!==insideTag){
+
+            coordNodes=Array.prototype.concat.apply([], _array(xmlDom.getElementsByTagName(insideTag)).map(function(inside){
+                return _array(inside.getElementsByTagName('coordinates'));
+            }));
+
+        }else{
+            coordNodes = _array(xmlDom.getElementsByTagName('coordinates'));
+        }
+
+       
         if (!coordNodes.length) {
             console.warn(['KmlReader. DOM Node did not contain coordinates!', {
                 node: xmlDom
@@ -663,7 +681,9 @@ var KmlReader = (function() {
             return null;
         }
 
-        var parseCoords = function(node) {
+        
+
+        var coordinates =coordNodes.map(function(node) {
 
 
             var s = KmlReader.Value(node);
@@ -683,19 +703,11 @@ var KmlReader = (function() {
 
             return coordinates;
 
+        });
+
+        if(coordinates.length==1){
+            return coordinates.shift();
         }
-
-        var coordinates = parseCoords(coordNodes.item(0));
-
-        if (coordNodes.length > 1) {
-
-            coordinates = [coordinates];
-            for (var i = 1; i < coordNodes.length; i++) {
-                coordinates.push(parseCoords(coordNodes.item(i)));
-            }
-        }
-
-
 
         return coordinates;
     };
@@ -1109,7 +1121,7 @@ var KmlReader = (function() {
                 }
 
                 if (node.parentNode.tagName === 'MultiGeometry'){
-                   if( node.parentNode.getElementsByTagName(tagName)[0] === node){
+                   if(node.parentNode.getElementsByTagName(tagName)[0] === node){
                        items.push(parent);
                    }
                 }
@@ -1210,3 +1222,42 @@ var KmlReader = (function() {
 if (typeof module != 'undefined') {
     module.exports = KmlReader;
 }
+
+
+
+
+
+/**
+
+
+
+<Placemark xmlns="http://earth.google.com/kml/2.2">
+      <name>IRON FORMATION</name>
+    <description><![CDATA[<i>Marble, chert, iron formation, minor metavolcanic rocks]]></description>
+           <Region>
+               <LatLonAltBox>
+              <north>47.1597737166513</north>
+              <south>46.9570803974756</south>
+              <east>-79.7383118440905</east>
+              <west>-79.9410051632662</west>
+              <minAltitude>0</minAltitude>
+              <maxAltitude>0</maxAltitude>
+          </LatLonAltBox>
+          <Lod>
+              <minLodPixels>64</minLodPixels>
+              <maxLodPixels>-1</maxLodPixels>
+              <minFadeExtent>0</minFadeExtent>
+              <maxFadeExtent>0</maxFadeExtent>
+          </Lod>
+      </Region>
+           <styleUrl>#feature</styleUrl>
+               <MultiGeometry>
+                   <altitudeMode>relativeToGround</altitudeMode>
+               <Point>
+                           <coordinates>-79.8396585036784,47.0584270570635</coordinates>
+               </Point>
+<LineString><coordinates>-79.790112,47.069048,0 -79.799959,47.067019,0 -79.810474,47.064854,0 -79.818051,47.063153,0 -79.826247,47.061374,0 -79.834675,47.059519,0 -79.842793,47.057741,0 -79.854004,47.055189,0 -79.86274,47.052792,0 -79.872714,47.050086,0 -79.881838,47.047457,0 -79.884776,47.04653,0 -79.888515,47.045116,0</coordinates></LineString>
+           </MultiGeometry>
+    </Placemark>
+
+**/
