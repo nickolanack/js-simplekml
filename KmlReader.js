@@ -549,7 +549,7 @@ var KmlReader = (function() {
                     lineColor: '#FF000000', // black
                     lineWidth: 1,
                     polyColor: '#77000000', //black semitransparent,
-                    coordinates: KmlReader.ParseDomCoordinates(node) //returns an array of google.maps.LatLng
+                    coordinates: KmlReader.ParseDomCoordinates(node, 'Polygon') //returns an array of google.maps.LatLng
                 },
 
                 attributes,
@@ -640,7 +640,7 @@ var KmlReader = (function() {
         var attributes = KmlReader.ParseNonSpatialDomData(xmlMarkerNode, {});
         var styleName = KmlReader.ParseDomStyle(xmlMarkerNode);
 
-        var coords = KmlReader.ParseDomCoordinates(xmlMarkerNode);
+        var coords = KmlReader.ParseDomCoordinates(xmlMarkerNode, 'Point');
         var marker = _append({
             type: 'point'
         }, {
