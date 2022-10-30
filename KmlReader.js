@@ -589,9 +589,11 @@ var KmlReader = (function() {
 
             if (callback&&!me._sortDistanceFromCenter) {
                 callback(polygonData, i, length);
-            } else {
-                polygons.push(polygonData);
-            }
+                return null;
+            } 
+            
+            return polygonData;
+         
         });
 
         if(me._sortDistanceFromCenter){
