@@ -439,7 +439,10 @@ var KmlReader = (function() {
         var i;
         for (i = 0; i < linkDomNodes.length; i++) {
             var node = linkDomNodes.item(i);
-            var linkData = _append({}, KmlReader.ParseDomLink(node), KmlReader.ParseNonSpatialDomData(node, {}), KmlReader.ParseRegionDomData(node, {}));
+            var linkData = _append({}, 
+                KmlReader.ParseDomLink(node), 
+                KmlReader.ParseNonSpatialDomData(node, {}), 
+                KmlReader.ParseRegionDomData(node, {}));
 
             var transform = function(options) {
                 return options;
@@ -496,7 +499,8 @@ var KmlReader = (function() {
                     coordinates: KmlReader.ParseDomCoordinates(node, 'LineString') //returns an array of GLatLngs
                 },
                 attributes,
-                style
+                style,
+                KmlReader.ParseRegionDomData(node.parentNode, {})
 
             );
 
@@ -553,7 +557,8 @@ var KmlReader = (function() {
                 },
 
                 attributes,
-                style
+                style,
+                KmlReader.ParseRegionDomData(node.parentNode, {})
 
             );
 
@@ -589,7 +594,7 @@ var KmlReader = (function() {
 
             var node = lineDomNodes[i];
 
-            var polygonData = _append({
+            var overlayData = _append({
                     type: 'imageoverlay',
                     icon: KmlReader.ParseDomIcon(node),
                     bounds: KmlReader.ParseDomBounds(node)
@@ -598,7 +603,7 @@ var KmlReader = (function() {
                 KmlReader.ParseRegionDomData(node.parentNode, {})
             );
 
-            lines.push(polygonData);
+            lines.push(overlayData);
         }
 
         return lines;
@@ -642,10 +647,12 @@ var KmlReader = (function() {
 
         var coords = KmlReader.ParseDomCoordinates(xmlMarkerNode, 'Point');
         var marker = _append({
-            type: 'point'
-        }, {
-            coordinates: coords[0] //returns an array of google.maps.LatLng
-        }, attributes);
+                type: 'point'
+            }, {
+                coordinates: coords[0] //returns an array of google.maps.LatLng
+            }, attributes,
+            KmlReader.ParseRegionDomData(node.parentNode, {})
+        );
         var icon = styleName;
         if (icon.charAt(0) == '#') {
             icon = getStyleFn(styleName).icon;
