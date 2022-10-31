@@ -149,6 +149,15 @@ var KmlReader = (function() {
         }
 
         this._sortDistanceFromCenter=center;
+
+
+        /**
+         * TODO calculate a scaling factor for dx values based on center.latitude
+         */
+
+         var cosy=Math.cos(center[0]);
+         var scale=cosy*cosy*(1-cos(Math.PI / 180))/2
+
         return this;
     };
 
