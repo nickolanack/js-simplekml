@@ -349,7 +349,7 @@ var KmlReader = (function() {
             kml = me._kml;
         }
 
-        KmlReader.ParseDomLines(kml, function(p, i, len) {
+        this._parseDomLines(kml, function(p, i, len) {
             if (me._filterItem(p, i)) {
                 callback(p, len, i);
             }
@@ -366,7 +366,7 @@ var KmlReader = (function() {
             callback = kml;
             kml = me._kml;
         }
-        var overlayData = me._filter(KmlReader.ParseDomGroundOverlays(kml));
+        var overlayData = me._filter(this._parseDomGroundOverlays(kml));
         overlayData.forEach(function(o, i) {
             callback(o, overlayData.length, i);
             me._scheduleIdle();
@@ -557,7 +557,7 @@ var KmlReader = (function() {
         return link;
     };
 
-    KmlReader.ParseDomLines = function(xmlDom, callback) {
+    KmlReader.prototype._parseDomLines = function(xmlDom, callback) {
         var lines = [];
         var lineDomNodes = KmlReader.ParseDomItems(xmlDom, 'LineString');
 
@@ -734,7 +734,7 @@ var KmlReader = (function() {
         return polygons;
     };
 
-    KmlReader.ParseDomGroundOverlays = function(xmlDom) {
+    KmlReader.prototype._parseDomGroundOverlays = function(xmlDom) {
         var lines = [];
         var lineDomNodes = KmlReader.ParseDomItems(xmlDom, 'GroundOverlay');
         var i;
