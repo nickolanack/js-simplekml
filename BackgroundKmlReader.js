@@ -24,10 +24,10 @@ var BackgroundKmlReader = (function() {
 				return;
 			}
 
-			if(e.data.progress){
+			// if(e.data.progress){
 
-				return;
-			}
+			// 	return;
+			// }
 
 
 			if(e.data.error){
