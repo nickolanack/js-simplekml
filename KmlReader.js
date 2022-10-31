@@ -323,11 +323,11 @@ var KmlReader = (function() {
         this._parseDomPolygons(kml, function(p, i, len) {
             if (me._filterItem(p, i)) {
                 callback(p, len, i);
-                me._trottledProgress({
-                    loading: 'polygons',
-                    loaded: i,
-                    total: len
-                });
+                // me._trottledProgress({
+                //     loading: 'polygons',
+                //     loaded: i,
+                //     total: len
+                // });
             }
             me._scheduleIdle();
         });
@@ -657,6 +657,13 @@ var KmlReader = (function() {
 
             polygonData.polyOpacity = (polygonData.fill) ? polyRGB.opacity : 0;
             polygonData.polyColor = polyRGB.color;
+
+
+            me._trottledProgress({
+                    loading: 'polygons',
+                    loaded: i,
+                    total: len
+            });
 
             if (callback && !me._sortDistanceFromCenter) {
                 callback(polygonData, i, length);
