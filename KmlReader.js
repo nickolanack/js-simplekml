@@ -662,7 +662,7 @@ var KmlReader = (function() {
             me._trottledProgress({
                     loading: 'polygons',
                     loaded: i,
-                    total: len
+                    total: length
             });
 
             if (callback && !me._sortDistanceFromCenter) {
