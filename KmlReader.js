@@ -189,11 +189,11 @@ var KmlReader = (function() {
         }
 
 
-        if((new Date()).getTime()<this._trottledProgressTimeout){
+        if ((new Date()).getTime() < this._trottledProgressTimeout) {
             return;
         }
 
-        this._trottledProgressTimeout=(new Date).getTime()+200;
+        this._trottledProgressTimeout = (new Date).getTime() + 200;
 
         this._progressHandlers.forEach(function(cb) {
             cb(data);
@@ -294,6 +294,14 @@ var KmlReader = (function() {
             dataList.splice(i, markerDomNodes.length, filteredData);
             filteredData.forEach(function(data, index) {
                 callback(data, dataList.length, index + offset);
+
+
+                me._trottledProgress({
+                    loading: 'points',
+                    loaded: index + offset,
+                    total: dataList.length
+                });
+
                 me._scheduleIdle();
             });
             offset += filteredData.length;
@@ -590,6 +598,14 @@ var KmlReader = (function() {
             polygonData.lineOpacity = rgb.opacity;
             polygonData.lineColor = rgb.color;
 
+
+            me._trottledProgress({
+                loading: 'lines',
+                loaded: i,
+                total: lineDomNodes.length
+            });
+
+
             if (callback) {
                 callback(polygonData, i, lineDomNodes.length);
             } else {
@@ -657,9 +673,9 @@ var KmlReader = (function() {
 
 
             me._trottledProgress({
-                    loading: 'polygons',
-                    loaded: i,
-                    total: length
+                loading: 'polygons',
+                loaded: i,
+                total: length
             });
 
             if (callback && !me._sortDistanceFromCenter) {
@@ -734,6 +750,13 @@ var KmlReader = (function() {
                 KmlReader.ParseNonSpatialDomData(node, {}),
                 KmlReader.ParseRegionDomData(node.parentNode, {})
             );
+
+            me._trottledProgress({
+                loading: 'overlays',
+                loaded: i,
+                total: lineDomNodes.length
+            });
+
 
             lines.push(overlayData);
         }
