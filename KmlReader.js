@@ -156,7 +156,7 @@ var KmlReader = (function() {
          */
 
          var cosy=Math.cos(center[0]*Math.PI / 180.0);
-         var this._scaleXSort=cosy*cosy;
+         this._scaleXSort=cosy*cosy;
         
 
         return this;
