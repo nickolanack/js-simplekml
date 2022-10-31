@@ -156,7 +156,7 @@ var KmlReader = (function() {
          */
 
          var cosy=Math.cos(center[0]);
-         var scale=cosy*cosy*(1-cos(Math.PI / 180))/2
+         var scale=cosy*cosy*(1-Math.cos(Math.PI / 180.0))/2.0;
 
         return this;
     };
