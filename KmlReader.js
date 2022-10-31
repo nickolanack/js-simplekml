@@ -189,14 +189,11 @@ var KmlReader = (function() {
         }
 
 
-        if(this._trottledProgressTimeout){
+        if((new Date()).getTime()<this._trottledProgressTimeout){
             return;
         }
 
-        var me=this;
-        this._trottledProgressTimeout=setTimeout(function(){
-            delete me._trottledProgressTimeout;
-        }, 200);
+        this._trottledProgressTimeout=(new Date).getTime()+200;
 
         this._progressHandlers.forEach(function(cb) {
             cb(data);
