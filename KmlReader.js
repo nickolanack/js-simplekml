@@ -155,8 +155,9 @@ var KmlReader = (function() {
          * TODO calculate a scaling factor for dx values based on center.latitude
          */
 
-         var cosy=Math.cos(center[0]);
-         var scale=cosy*cosy*(1-Math.cos(Math.PI / 180.0))/2.0;
+         var cosy=Math.cos(center[0]*Math.PI / 180.0);
+         var this._scaleXSort=cosy*cosy;
+        
 
         return this;
     };
@@ -616,6 +617,9 @@ var KmlReader = (function() {
 
         if(me._sortDistanceFromCenter){
 
+
+          var sLng=me._scaleXSort*me._scaleXSort;
+
           polygons.sort(function(a, b){
 
              var ac = a.coordinates[0];
@@ -640,7 +644,7 @@ var KmlReader = (function() {
             var blng=parseFloat(bc[1])-me._sortDistanceFromCenter[1];
 
 
-            return (alat*alat+alng*alng)-(blat*blat+blng*blng);
+            return (alat*alat+alng*alng*sLng)-(blat*blat+blng*blng*sLng);
 
 
           });
