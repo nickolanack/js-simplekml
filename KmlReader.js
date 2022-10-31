@@ -599,7 +599,7 @@ var KmlReader = (function() {
             polygonData.lineColor = rgb.color;
 
 
-            me._trottledProgress({
+            this._trottledProgress({
                 loading: 'lines',
                 loaded: i,
                 total: lineDomNodes.length
@@ -751,7 +751,7 @@ var KmlReader = (function() {
                 KmlReader.ParseRegionDomData(node.parentNode, {})
             );
 
-            me._trottledProgress({
+            this._trottledProgress({
                 loading: 'overlays',
                 loaded: i,
                 total: lineDomNodes.length
