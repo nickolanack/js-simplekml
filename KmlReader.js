@@ -323,7 +323,7 @@ var KmlReader = (function() {
         this._parseDomPolygons(kml, function(p, i, len) {
             if (me._filterItem(p, i)) {
                 callback(p, len, i);
-                this._trottledProgress({
+                me._trottledProgress({
                     loading: 'polygons',
                     loaded: i,
                     total: len
