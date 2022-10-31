@@ -50,7 +50,7 @@ var KmlReader = (function() {
     }
 
 
-    var _array=function(a){
+    var _array = function(a) {
         return Array.prototype.slice.call(a, 0);
     };
 
@@ -103,10 +103,9 @@ var KmlReader = (function() {
 
 
 
-
     KmlReader.prototype.remove = function() {
         delete this._kml;
-        delete this._progress;
+        delete this._progressHandlers;
     }
 
 
@@ -141,35 +140,69 @@ var KmlReader = (function() {
 
     KmlReader.prototype.sortDistanceFromCenter = function(center) {
 
-        if(typeof center.latitude!=='undefined' && typeof center.longitude!=='undefined'){
-            center=[parseFloat(center.latitude), parseFloat(center.longitude)];
+        if (typeof center.latitude !== 'undefined' && typeof center.longitude !== 'undefined') {
+            center = [parseFloat(center.latitude), parseFloat(center.longitude)];
         }
 
-        if(typeof center.lat!=='undefined'&&typeof center.lng!=='undefined'){
-            center=[parseFloat(center.lat), parseFloat(center.lng)];
+        if (typeof center.lat !== 'undefined' && typeof center.lng !== 'undefined') {
+            center = [parseFloat(center.lat), parseFloat(center.lng)];
         }
 
-        this._sortDistanceFromCenter=center;
+        this._sortDistanceFromCenter = center;
 
 
         /**
          * TODO calculate a scaling factor for dx values based on center.latitude
          */
 
-         var cosy=Math.cos(center[0]*Math.PI / 180.0);
-         this._scaleXSort=cosy*cosy;
-        
+        var cosy = Math.cos(center[0] * Math.PI / 180.0);
+        this._scaleXSort = cosy * cosy;
+
 
         return this;
     };
 
 
     KmlReader.prototype.progress = function(callback) {
-        if(!this._progress){
-            this._progress=[];
+        if (!this._progressHandlers) {
+            this._progressHandlers = [];
         }
-        this._progress.push(callback);
+        this._progressHandlers.push(callback);
         return this;
+    }
+
+
+    KmlReader.prototype._progress = function(data) {
+        if (!this._progressHandlers) {
+            return;
+        }
+
+        this._progressHandlers.forEach(function(cb) {
+            cb(data);
+        });
+
+    };
+
+    KmlReader.prototype._trottledProgress = function(data) {
+        if (!this._progressHandlers) {
+            return;
+        }
+
+
+        if(this._trottledProgressTimeout){
+            return;
+        }
+
+        var me=this;
+        this._trottledProgressTimeout=setTimeout(function(){
+            delete me._trottledProgressTimeout;
+        }, 200);
+
+        this._progressHandlers.forEach(function(cb) {
+            cb(data);
+        });
+
+
     }
 
 
@@ -284,11 +317,22 @@ var KmlReader = (function() {
             callback = kml;
             kml = me._kml;
         }
+        this._progress({
+            loading: 'polygons'
+        });
         this._parseDomPolygons(kml, function(p, i, len) {
             if (me._filterItem(p, i)) {
                 callback(p, len, i);
+                this._trottledProgress({
+                    loading: 'polygons',
+                    loaded: i,
+                    total: len
+                });
             }
             me._scheduleIdle();
+        });
+        this._progress({
+            loaded: 'polygons'
         });
         me._scheduleIdle();
         return me;
@@ -325,8 +369,6 @@ var KmlReader = (function() {
         me._scheduleIdle();
         return me;
     };
-
-
 
 
 
@@ -482,9 +524,9 @@ var KmlReader = (function() {
         var i;
         for (i = 0; i < linkDomNodes.length; i++) {
             var node = linkDomNodes.item(i);
-            var linkData = _append({}, 
-                KmlReader.ParseDomLink(node), 
-                KmlReader.ParseNonSpatialDomData(node, {}), 
+            var linkData = _append({},
+                KmlReader.ParseDomLink(node),
+                KmlReader.ParseNonSpatialDomData(node, {}),
                 KmlReader.ParseRegionDomData(node, {}));
 
             var transform = function(options) {
@@ -578,14 +620,14 @@ var KmlReader = (function() {
             return styles[styleName];
         }
 
-        var polygonDomNodes=_array(KmlReader.ParseDomItems(xmlDom, 'Polygon'));
-        var length=polygonDomNodes.length;
+        var polygonDomNodes = _array(KmlReader.ParseDomItems(xmlDom, 'Polygon'));
+        var length = polygonDomNodes.length;
 
-        var me=this;
-        var polygons=polygonDomNodes.map(function(node, i){
+        var me = this;
+        var polygons = polygonDomNodes.map(function(node, i) {
 
 
-            polygonDomNodes[i]=null; 
+            polygonDomNodes[i] = null;
 
             var attributes = KmlReader.ParseNonSpatialDomData(node, {});
             var styleName = KmlReader.ParseDomStyle(node);
@@ -616,53 +658,53 @@ var KmlReader = (function() {
             polygonData.polyOpacity = (polygonData.fill) ? polyRGB.opacity : 0;
             polygonData.polyColor = polyRGB.color;
 
-            if (callback&&!me._sortDistanceFromCenter) {
+            if (callback && !me._sortDistanceFromCenter) {
                 callback(polygonData, i, length);
                 return null;
-            } 
-            
+            }
+
             return polygonData;
-         
+
         });
 
-        if(me._sortDistanceFromCenter){
+        if (me._sortDistanceFromCenter) {
 
 
-          var sLng=me._scaleXSort*me._scaleXSort;
+            var sLng = me._scaleXSort * me._scaleXSort;
 
-          polygons.sort(function(a, b){
+            polygons.sort(function(a, b) {
 
-             var ac = a.coordinates[0];
-             var typeAC = typeof ac[0]; //lat
-             if(typeAC!=="number"&&typeAC!=="string"){
-                 ac=ac[0]; //multipoint
-             }
-
-
-             var bc = b.coordinates[0];
-             var typeBC = typeof ac[0]; //lat
-             if(typeBC!=="number"&&typeBC!=="string"){
-                 bc=bc[0]; //multipoint
-             }
+                var ac = a.coordinates[0];
+                var typeAC = typeof ac[0]; //lat
+                if (typeAC !== "number" && typeAC !== "string") {
+                    ac = ac[0]; //multipoint
+                }
 
 
-            var alat=parseFloat(ac[0])-me._sortDistanceFromCenter[0];
-            var alng=parseFloat(ac[1])-me._sortDistanceFromCenter[1];
+                var bc = b.coordinates[0];
+                var typeBC = typeof ac[0]; //lat
+                if (typeBC !== "number" && typeBC !== "string") {
+                    bc = bc[0]; //multipoint
+                }
 
 
-            var blat=parseFloat(bc[0])-me._sortDistanceFromCenter[0];
-            var blng=parseFloat(bc[1])-me._sortDistanceFromCenter[1];
+                var alat = parseFloat(ac[0]) - me._sortDistanceFromCenter[0];
+                var alng = parseFloat(ac[1]) - me._sortDistanceFromCenter[1];
 
 
-            return (alat*alat+alng*alng*sLng)-(blat*blat+blng*blng*sLng);
+                var blat = parseFloat(bc[0]) - me._sortDistanceFromCenter[0];
+                var blng = parseFloat(bc[1]) - me._sortDistanceFromCenter[1];
 
 
-          });
+                return (alat * alat + alng * alng * sLng) - (blat * blat + blng * blng * sLng);
+
+
+            });
 
         }
         if (callback) {
 
-            polygons.forEach(function(polygonData, i){
+            polygons.forEach(function(polygonData, i) {
                 callback(polygonData, i, length);
             });
 
@@ -756,17 +798,17 @@ var KmlReader = (function() {
 
         var coordNodes;
 
-        if(typeof insideTag=='string'&&xmlDom.tagName!==insideTag){
+        if (typeof insideTag == 'string' && xmlDom.tagName !== insideTag) {
 
-            coordNodes=Array.prototype.concat.apply([], _array(xmlDom.getElementsByTagName(insideTag)).map(function(inside){
+            coordNodes = Array.prototype.concat.apply([], _array(xmlDom.getElementsByTagName(insideTag)).map(function(inside) {
                 return _array(inside.getElementsByTagName('coordinates'));
             }));
 
-        }else{
+        } else {
             coordNodes = _array(xmlDom.getElementsByTagName('coordinates'));
         }
 
-       
+
         if (!coordNodes.length) {
             console.warn(['KmlReader. DOM Node did not contain coordinates!', {
                 node: xmlDom
@@ -774,9 +816,9 @@ var KmlReader = (function() {
             return null;
         }
 
-        
 
-        var coordinates =coordNodes.map(function(node) {
+
+        var coordinates = coordNodes.map(function(node) {
 
 
             var s = KmlReader.Value(node);
@@ -798,7 +840,7 @@ var KmlReader = (function() {
 
         });
 
-        if(coordinates.length==1){
+        if (coordinates.length == 1) {
             return coordinates.shift();
         }
 
@@ -1208,15 +1250,15 @@ var KmlReader = (function() {
                 mm_trace();
             } else {
 
-                if (node.parentNode.tagName !== 'MultiGeometry'){
+                if (node.parentNode.tagName !== 'MultiGeometry') {
 
                     items.push(parent);
                 }
 
-                if (node.parentNode.tagName === 'MultiGeometry'){
-                   if(node.parentNode.getElementsByTagName(tagName)[0] === node){
-                       items.push(parent);
-                   }
+                if (node.parentNode.tagName === 'MultiGeometry') {
+                    if (node.parentNode.getElementsByTagName(tagName)[0] === node) {
+                        items.push(parent);
+                    }
                 }
             }
         }
@@ -1315,8 +1357,6 @@ var KmlReader = (function() {
 if (typeof module != 'undefined') {
     module.exports = KmlReader;
 }
-
-
 
 
 
