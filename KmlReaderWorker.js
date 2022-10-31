@@ -81,6 +81,7 @@ var handleMessage = function(e) {
     }
 
     if(loading){
+
     	_queue.push(e);
     	return;
     }
@@ -98,6 +99,16 @@ var handleMessage = function(e) {
 
     if(e.data&&e.data.sortDistanceFromCenter){
     	reader.sortDistanceFromCenter(e.data.sortDistanceFromCenter);
+    	return;
+    }
+
+
+    if(e.data==='progress'){
+    	reader.progress(function(data) {
+            postMessage({
+                'progress':data
+            });
+        });
     	return;
     }
 

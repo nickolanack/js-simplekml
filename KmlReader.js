@@ -106,6 +106,7 @@ var KmlReader = (function() {
 
     KmlReader.prototype.remove = function() {
         delete this._kml;
+        delete this._progress;
     }
 
 
@@ -161,6 +162,15 @@ var KmlReader = (function() {
 
         return this;
     };
+
+
+    KmlReader.prototype.progress = function(callback) {
+        if(!this._progress){
+            this._progress=[];
+        }
+        this._progress.push(callback);
+        return this;
+    }
 
 
 

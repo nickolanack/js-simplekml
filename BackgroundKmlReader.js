@@ -93,6 +93,12 @@ var BackgroundKmlReader = (function() {
 	};
 
 
+	BackgroundKmlReader.prototype.progress = function(callback) {
+		this._execute('progress', callback);
+		return this;
+	};
+
+
 
 	BackgroundKmlReader.prototype.sortDistanceFromCenter = function(center) {
 		this._worker.postMessage({sortDistanceFromCenter:center});
