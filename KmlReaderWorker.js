@@ -96,7 +96,13 @@ var handleMessage = function(e) {
     			}).then(function(response){
 
     				if(typeof response==='undefined'){
-    					return _cache.add(e.data);
+    					return fetch(e.data).then(function(response) {
+						  if (!response.ok) {
+						    throw new TypeError("bad response status");
+						  }
+						  _cache.put(e.data, response);
+						  return response;
+						});
     				}
     				
     				return response;
