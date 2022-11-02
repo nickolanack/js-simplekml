@@ -112,7 +112,7 @@ var handleMessage = function(e) {
 							    }
 
 							    charsReceived += d.value.length;
-							    return reader.read().then(processText);
+							    return progress.read().then(processText);
 						  };
 						  progress.read().then(processProgress);
 
