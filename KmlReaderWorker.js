@@ -101,7 +101,22 @@ var handleMessage = function(e) {
 						    throw new TypeError("bad response status");
 						  }
 
-						  return _cache.put(e.data, response).then(function(){
+						  var parts=response.body.tee();
+						  var progress=parts[1].getReader();
+						  var charsReceived=0;
+						  var processProgress=function(d) {
+			
+							    if (d.done) {
+							      console.log("Stream complete");
+							      return;
+							    }
+
+							    charsReceived += d.value.length;
+							    return reader.read().then(processText);
+						  };
+						  progress.read().then(processProgress);
+
+						  return _cache.put(e.data, stream).then(function(){
 						  	 return _cache.match(e.data);
 						  })
 						 
