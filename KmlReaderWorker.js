@@ -116,7 +116,7 @@ var handleMessage = function(e) {
 						  };
 						  progress.read().then(processProgress);
 
-						  return _cache.put(e.data, stream).then(function(){
+						  return _cache.put(e.data, response).then(function(){
 						  	 return _cache.match(e.data);
 						  })
 						 
