@@ -1,16 +1,82 @@
 importScripts('KmlReader.js');
 
 
-
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.xmldom = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 // create DOMParser variable from xmldom
 var DOMParser = require('@xmldom/xmldom').DOMParser;
+
+var CACHE='simple-kml-worker-v1-cache';
+var USE_CACHE=true
 
 var reader = null;
 var loading=false;
 var callIdle=function(){};
 
 var _queue=[];
+
+var _cache=null;
+
+
+var xhttpRequest = function(e, cb){
+
+	var xhttp = new XMLHttpRequest();
+
+    xhttp.onload = function() {
+
+    	if(cb){
+    		cb(xhttp.responseText);
+    	}
+    	readXmlString(xhttp.responseText);
+
+    };
+
+    xhttp.onerror = function() {
+    };
+
+    xhttp.onprogress = function(ev) {
+    	postMessage({'progress':{loaded:ev.loaded, total:ev.total}});
+    };
+
+
+    xhttp.ontimeout = function() {
+    };
+    xhttp.onabort = function() {
+    };
+
+
+    xhttp.open('POST', e.data);
+    xhttp.responseType = 'text'
+    xhttp.setRequestHeader("Content-Type", 'application/x-www-form-urlencoded');
+
+    //xhttp.setRequestHeader("Cache-Control", 'no-cache');
+
+    xhttp.send();
+
+
+
+
+};
+
+
+var readXmlString = function(string){
+
+
+	var xmlDom=new DOMParser().parseFromString(string);
+    if(!xmlDom){
+		postMessage({'error':'Failed to parse xml'});
+		return;
+	}
+
+    reader = new KmlReader(xmlDom);
+    loading=false;
+
+    var q=_queue.slice(0);
+    _queue=[];
+    q.forEach(handleMessage);
+
+
+}
+
 
 var handleMessage = function(e) {
 
@@ -19,64 +85,34 @@ var handleMessage = function(e) {
     	loading=true;
     	if(e.data.indexOf('<')!=0){
     		//assume this is a url!
+    		
 
-            var xhttp = new XMLHttpRequest();
+    		if(USE_CACHE&&self.caches){
+    			caches.open(CACHE).then(function(cache){
+    				return cache.match(e.data)
+    			}).then(function(response){
 
-            xhttp.onload = function() {
-            	var xmlDom=new DOMParser().parseFromString(xhttp.responseText)
+    				if(typeof response==='undefined'){
+    					xhttpRequest(e, function(xmlString){
+    						cache.put(e.data, xmlString);
+    					});
+    					return;
+    				}
 
-            	if(!xmlDom){
+    				readXmlString(response.text());
 
-            		postMessage({'error':'Failed to parse xml'});
+    			});
+    			return;
+    		}
 
-            		return;
-            	}
-
-            	reader = new KmlReader(xmlDom);
-            	loading=false;
-		        var q=_queue.slice(0);
-		        _queue=[];
-		        q.forEach(handleMessage);
-            };
-
-            xhttp.onerror = function() {
-            };
-
-            xhttp.onprogress = function(ev) {
-            	postMessage({'progress':{loaded:ev.loaded, total:ev.total}});
-            };
-
-
-            xhttp.ontimeout = function() {
-            };
-            xhttp.onabort = function() {
-            };
-
-
-            xhttp.open('POST', e.data);
-            xhttp.responseType = 'text'
-            xhttp.setRequestHeader("Content-Type", 'application/x-www-form-urlencoded');
-
-            //xhttp.setRequestHeader("Cache-Control", 'no-cache');
-
-            xhttp.send();
+    		xhttpRequest(e);
+            
             return;
         }
 
 
-        var xmlDom=new DOMParser().parseFromString(e.data)
-        if(!xmlDom){
-    		postMessage({'error':'Failed to parse xml'});
-    		return;
-    	}
-
-        reader = new KmlReader(xmlDom);
-        loading=false;
-
-        var q=_queue.slice(0);
-        _queue=[];
-        q.forEach(handleMessage);
-
+        readXmlString(e.data)
+        
         return;
     }
 
