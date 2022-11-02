@@ -107,11 +107,11 @@ var handleMessage = function(e) {
 						  var processProgress=function(d) {
 			
 							    if (d.done) {
-							      console.log("Stream complete");
-							      return;
+							    	return;
 							    }
 
 							    charsReceived += d.value.length;
+							    postMessage({'progress':{loaded:charsReceived, total:0}});
 							    return progress.read().then(processProgress);
 						  };
 						  progress.read().then(processProgress);
@@ -134,6 +134,11 @@ var handleMessage = function(e) {
     			}).then(function(text){
 
     				 readXmlString(text);
+
+    			}).catch(function(e_){
+
+    				console.error(e_);
+    				//xhttpRequest(e);
 
     			});
     			return;
