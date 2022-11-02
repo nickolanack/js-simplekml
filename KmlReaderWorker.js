@@ -107,7 +107,7 @@ var handleMessage = function(e) {
     				return response.text();
 
 
-    			}).then(fucntion(text){
+    			}).then(function(text){
 
     				 readXmlString(text);
 
