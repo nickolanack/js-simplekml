@@ -89,12 +89,13 @@ var handleMessage = function(e) {
 
     		if(USE_CACHE&&self.caches){
     			caches.open(CACHE).then(function(cache){
-    				return cache.match(e.data)
+    				_cache=cache;
+    				return cache.match(e.data);
     			}).then(function(response){
 
     				if(typeof response==='undefined'){
     					xhttpRequest(e, function(xmlString){
-    						cache.put(e.data, xmlString);
+    						_cache.put(e.data, xmlString);
     					});
     					return;
     				}
