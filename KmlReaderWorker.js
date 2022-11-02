@@ -5,7 +5,7 @@ importScripts('KmlReader.js');
 // create DOMParser variable from xmldom
 var DOMParser = require('@xmldom/xmldom').DOMParser;
 
-var CACHE='simple-kml-worker-v1-cache';
+var CACHE='simple-kml-worker-v2-cache';
 var USE_CACHE=true
 
 var reader = null;
