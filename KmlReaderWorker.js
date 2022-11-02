@@ -58,6 +58,8 @@ var xhttpRequest = function(e, cb){
 };
 
 
+
+
 var readXmlString = function(string){
 
 
@@ -94,13 +96,20 @@ var handleMessage = function(e) {
     			}).then(function(response){
 
     				if(typeof response==='undefined'){
-    					xhttpRequest(e, function(xmlString){
-    						_cache.put(e.data, xmlString);
-    					});
-    					return;
+    					return _cache.add(e.data);
     				}
+    				
+    				return response;
+    				
+    			}).then(function(response){ 
 
-    				readXmlString(response.text());
+
+    				return response.text();
+
+
+    			}).then(fucntion(text){
+
+    				 readXmlString(text);
 
     			});
     			return;
