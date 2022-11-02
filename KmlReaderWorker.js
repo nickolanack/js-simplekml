@@ -100,8 +100,11 @@ var handleMessage = function(e) {
 						  if (!response.ok) {
 						    throw new TypeError("bad response status");
 						  }
-						  _cache.put(e.data, response);
-						  return response;
+						  
+						  return _cache.put(e.data, response).then(function(){
+						  	 return cache.match(e.data);
+						  })
+						 
 						});
     				}
     				
