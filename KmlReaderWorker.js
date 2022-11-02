@@ -24,7 +24,7 @@ var xhttpRequest = function(e, cb){
     xhttp.onload = function() {
 
     	if(cb){
-    		cb(xhttp.responseText);
+    		cb(xhttp.response);
     	}
     	readXmlString(xhttp.responseText);
 
