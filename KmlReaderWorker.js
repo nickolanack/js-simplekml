@@ -101,8 +101,8 @@ var handleMessage = function(e) {
 						    throw new TypeError("bad response status");
 						  }
 
-						  var parts=response.body.tee();
-						  var progress=parts[1].getReader();
+						  var splitStream=response.body.tee();
+						  var progress=splitStream[1].getReader();
 						  var charsReceived=0;
 						  var processProgress=function(d) {
 			
@@ -116,7 +116,7 @@ var handleMessage = function(e) {
 						  };
 						  progress.read().then(processProgress);
 
-						  return _cache.put(e.data, response).then(function(){
+						  return _cache.put(e.data, new Response(splitStream[0])).then(function(){
 						  	 return _cache.match(e.data);
 						  })
 						 
