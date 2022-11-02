@@ -95,7 +95,7 @@ var handleMessage = function(e) {
 
     				if(typeof response==='undefined'){
     					xhttpRequest(e, function(xmlString){
-    						_cache.put(e.data, xmlString);
+    						//_cache.put(e.data, xmlString);
     					});
     					return;
     				}
