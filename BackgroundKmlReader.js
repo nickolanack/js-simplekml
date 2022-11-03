@@ -54,8 +54,14 @@ var BackgroundKmlReader = (function() {
 		};
 	};
 
+	BackgroundKmlReader.prototype.cancel = function() {
+		this.remove();
+	}
+
 	BackgroundKmlReader.prototype.remove = function() {
-		this._worker.terminate();
+		if(this._worker){
+			this._worker.terminate();
+		}
 		delete this._worker;
 		delete this._handlers;
 		delete this._idleFns;

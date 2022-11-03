@@ -102,6 +102,12 @@ var KmlReader = (function() {
     }
 
 
+     KmlReader.prototype.cancel = function() {
+       this._cancel=true;
+       this.remove();
+       return this;
+    }   
+
 
     KmlReader.prototype.remove = function() {
         delete this._kml;
@@ -286,6 +292,11 @@ var KmlReader = (function() {
         var getStyle = KmlReader._GetCachedStyleLookupFn(kml);
         var offset = 0;
         _batchTimeout(markerNodes, function(markerDomNodes, i) {
+
+            if(me._cancel){
+                return;
+            }
+
             var filteredData = me._filter(markerDomNodes.map(function(markerDomNode) {
                 return KmlReader.ParseDomMarker(markerDomNode, getStyle);
             }));
@@ -293,6 +304,11 @@ var KmlReader = (function() {
 
             dataList.splice(i, markerDomNodes.length, filteredData);
             filteredData.forEach(function(data, index) {
+
+                if(me._cancel){
+                    return;
+                }
+
                 callback(data, dataList.length, index + offset);
 
 
@@ -574,6 +590,10 @@ var KmlReader = (function() {
         var i;
         for (i = 0; i < lineDomNodes.length; i++) {
 
+            if(this._cancel){
+                return [];
+            }
+
             var node = lineDomNodes[i];
 
 
@@ -639,6 +659,10 @@ var KmlReader = (function() {
         var me = this;
         var polygons = polygonDomNodes.map(function(node, i) {
 
+            if(me._cancel){
+                return;
+            }
+
 
             polygonDomNodes[i] = null;
 
@@ -687,6 +711,11 @@ var KmlReader = (function() {
 
         });
 
+
+        if(this._cancel){
+            return [];
+        }
+
         if (me._sortDistanceFromCenter) {
 
 
@@ -725,10 +754,19 @@ var KmlReader = (function() {
         if (callback) {
 
             polygons.forEach(function(polygonData, i) {
+
+                if(me._cancel){
+                    return;
+                }
+
                 callback(polygonData, i, length);
             });
 
             return;
+        }
+
+        if(this._cancel){
+            return [];
         }
 
         return polygons;
@@ -739,6 +777,10 @@ var KmlReader = (function() {
         var lineDomNodes = KmlReader.ParseDomItems(xmlDom, 'GroundOverlay');
         var i;
         for (i = 0; i < lineDomNodes.length; i++) {
+
+            if(this._cancel){
+                return [];
+            }
 
             var node = lineDomNodes[i];
 
