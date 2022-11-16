@@ -981,7 +981,7 @@ var KmlReader = (function() {
 
 
         if(rotations.length){
-            data.rotation=KmlReader.Value(rotations.item(0));
+            data.rotation=parseFloat(KmlReader.Value(rotations.item(0)));
         }
 
 
