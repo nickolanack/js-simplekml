@@ -936,6 +936,9 @@ var KmlReader = (function() {
         var easts = node.getElementsByTagName('east');
         var wests = node.getElementsByTagName('west');
 
+
+        var rotations = node.getElementsByTagName('rotation');
+
         var north = null;
         var south = null;
         var east = null;
@@ -976,6 +979,10 @@ var KmlReader = (function() {
             west: west
         };
 
+
+        if(rotations.length){
+            data.rotation=KmlReader.Value(rotations.item(0));
+        }
 
 
         //optional 
