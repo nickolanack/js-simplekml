@@ -134,7 +134,7 @@ var handleMessage = function(e) {
 
 							  _cache.put(e.data, new Response(splitStream[0])).then(function(){
 							  	 return _cache.match(e.data);
-							  }).then(resolve).catch(function(e){
+							  }).then(resolve).catch(function(e_){
 
 							  	cache.match(e.data).then(resolve).catch(catch);
 
