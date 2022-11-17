@@ -101,7 +101,8 @@ var handleMessage = function(e) {
 						    throw new TypeError("bad response status");
 						  }
 
-						  var progress=response.clone().getReader();
+						  var progressResponse=response.clone()
+						  var progress=null
 						  var charsReceived=0;
 
 						  var _throttle=false;
@@ -137,6 +138,7 @@ var handleMessage = function(e) {
 							  	reject(e_);
 							  });
 
+							  progress=progressResponse.body.getReader();
 							  progress.read().then(processProgress).then(function(complete){
 							  	console.log('done');
 							  }).catch(function(e_){
