@@ -119,6 +119,7 @@ var handleMessage = function(e) {
 						  var processProgress=function(d) {
 			
 							    if (d.done) {
+							    	postMessage({'progress':{loaded:charsReceived, total:0}});
 							    	return true;
 							    }
 
