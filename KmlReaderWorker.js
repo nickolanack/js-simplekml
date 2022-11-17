@@ -105,14 +105,14 @@ var handleMessage = function(e) {
 						  var progress=splitStream[1].getReader();
 						  var charsReceived=0;
 
-						  var _throttle=null;
+						  var _throttle=false;
 						  var throttlePost=function(post){
-						  	if(_throttle){
+						  	if(_throttle!==false){
 						  		return;
 						  	}
 						  	postMessage(post);
 						  	_throttle=setTimeout(function(){
-						  		_throttle=null;
+						  		_throttle=false;
 						  	},250);
 						  }
 
