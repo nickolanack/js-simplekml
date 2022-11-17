@@ -126,15 +126,27 @@ var handleMessage = function(e) {
 							    throttlePost({'progress':{loaded:charsReceived, total:0}});
 							    return progress.read().then(processProgress);
 						  };
-						  progress.read().then(processProgress).then(function(complete){
-						  	console.log('done');
-						  }).catch(function(e_){
-						  	console.error(e_);
-						  });
 
-						  return _cache.put(e.data, new Response(splitStream[0])).then(function(){
-						  	 return _cache.match(e.data);
+
+						  return new Promise(function(resolve, reject){
+
+						  	 
+
+							  _cache.put(e.data, new Response(splitStream[0])).then(function(){
+							  	 return _cache.match(e.data);
+							  }).then(resolve).catch(reject);
+
+
+							  progress.read().then(processProgress).then(function(complete){
+							  	console.log('done');
+							  }).catch(function(e_){
+							  	console.error(e_);
+							  });
+
+
 						  })
+
+						 
 						 
 						});
     				}
