@@ -104,6 +104,18 @@ var handleMessage = function(e) {
 						  var splitStream=response.body.tee();
 						  var progress=splitStream[1].getReader();
 						  var charsReceived=0;
+
+						  var _throttle=null;
+						  var throttlePost=function(post){
+						  	if(_throttle){
+						  		return;
+						  	}
+						  	postMessage(post);
+						  	_throttle=setTimeout(function(){
+						  		_throttle=null;
+						  	},250);
+						  }
+
 						  var processProgress=function(d) {
 			
 							    if (d.done) {
@@ -111,7 +123,7 @@ var handleMessage = function(e) {
 							    }
 
 							    charsReceived += d.value.length;
-							    postMessage({'progress':{loaded:charsReceived, total:0}});
+							    throttlePost({'progress':{loaded:charsReceived, total:0}});
 							    return progress.read().then(processProgress);
 						  };
 						  progress.read().then(processProgress);
