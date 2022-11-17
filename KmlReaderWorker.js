@@ -102,7 +102,7 @@ var handleMessage = function(e) {
 						  }
 
 						  var splitStream=response.body.tee();
-						  var progress=splitStream[1].getReader();
+						  var progress=null;
 						  var charsReceived=0;
 
 						  var _throttle=false;
@@ -134,9 +134,16 @@ var handleMessage = function(e) {
 
 							  _cache.put(e.data, new Response(splitStream[0])).then(function(){
 							  	 return _cache.match(e.data);
-							  }).then(resolve).catch(reject);
+							  }).then(resolve).catch(function(e){
+
+							  	_cache.put(e.data, response).then(function(){
+								  	return _cache.match(e.data);
+								}).then(resolve).catch(reject);
 
 
+							  });
+
+							  progress=splitStream[1].getReader();
 							  progress.read().then(processProgress).then(function(complete){
 							  	console.log('done');
 							  }).catch(function(e_){
