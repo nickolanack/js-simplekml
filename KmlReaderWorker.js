@@ -136,7 +136,7 @@ var handleMessage = function(e) {
 							  	 return _cache.match(e.data);
 							  }).then(resolve).catch(function(e_){
 
-							  	cache.match(e.data).then(resolve).catch(reject);
+							  	_cache.match(e.data).then(resolve).catch(reject);
 
 							  });
 
