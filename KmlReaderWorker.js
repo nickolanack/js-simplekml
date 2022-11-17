@@ -2,261 +2,271 @@ importScripts('KmlReader.js');
 
 
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.xmldom = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
-// create DOMParser variable from xmldom
-var DOMParser = require('@xmldom/xmldom').DOMParser;
+			// create DOMParser variable from xmldom
+			var DOMParser = require('@xmldom/xmldom').DOMParser;
 
-var CACHE='simple-kml-worker-v2-cache';
-var USE_CACHE=true
+			var CACHE = 'simple-kml-worker-v2-cache';
+			var USE_CACHE = true
 
-var reader = null;
-var loading=false;
-var callIdle=function(){};
+			var reader = null;
+			var loading = false;
+			var callIdle = function() {};
 
-var _queue=[];
+			var _queue = [];
 
-var _cache=null;
-
-
-var xhttpRequest = function(e, cb){
-
-	var xhttp = new XMLHttpRequest();
-
-    xhttp.onload = function() {
-
-    	if(cb){
-    		cb(xhttp.response);
-    	}
-    	readXmlString(xhttp.responseText);
-
-    };
-
-    xhttp.onerror = function() {
-    };
-
-    xhttp.onprogress = function(ev) {
-    	postMessage({'progress':{loaded:ev.loaded, total:ev.total}});
-    };
+			var _cache = null;
 
 
-    xhttp.ontimeout = function() {
-    };
-    xhttp.onabort = function() {
-    };
+			var xhttpRequest = function(e, cb) {
+
+				var xhttp = new XMLHttpRequest();
+
+				xhttp.onload = function() {
+
+					if (cb) {
+						cb(xhttp.response);
+					}
+					readXmlString(xhttp.responseText);
+
+				};
+
+				xhttp.onerror = function() {};
+
+				xhttp.onprogress = function(ev) {
+					postMessage({
+						'progress': {
+							loaded: ev.loaded,
+							total: ev.total
+						}
+					});
+				};
 
 
-    xhttp.open('POST', e.data);
-    xhttp.responseType = 'text'
-    xhttp.setRequestHeader("Content-Type", 'application/x-www-form-urlencoded');
-
-    //xhttp.setRequestHeader("Cache-Control", 'no-cache');
-
-    xhttp.send();
+				xhttp.ontimeout = function() {};
+				xhttp.onabort = function() {};
 
 
+				xhttp.open('POST', e.data);
+				xhttp.responseType = 'text'
+				xhttp.setRequestHeader("Content-Type", 'application/x-www-form-urlencoded');
 
+				//xhttp.setRequestHeader("Cache-Control", 'no-cache');
 
-};
+				xhttp.send();
 
 
 
-
-var readXmlString = function(string){
-
-
-	var xmlDom=new DOMParser().parseFromString(string);
-    if(!xmlDom){
-		postMessage({'error':'Failed to parse xml'});
-		return;
-	}
-
-    reader = new KmlReader(xmlDom);
-    loading=false;
-
-    var q=_queue.slice(0);
-    _queue=[];
-    q.forEach(handleMessage);
-
-
-}
-
-
-var handleMessage = function(e) {
-
-
-    if ((!reader)&&(!loading)) {
-    	loading=true;
-    	if(e.data.indexOf('<')!=0){
-    		//assume this is a url!
-    		
-
-    		if(USE_CACHE&&self.caches){
-    			caches.open(CACHE).then(function(cache){
-    				_cache=cache;
-    				return cache.match(e.data);
-    			}).then(function(response){
-
-    				if(typeof response==='undefined'){
-    					return fetch(e.data).then(function(response) {
-						  if (!response.ok) {
-						    throw new TypeError("bad response status");
-						  }
-
-						  var progressResponse=response.clone();
-						  var progress=null
-						  var charsReceived=0;
-
-						  var _throttle=false;
-						  var throttlePost=function(post){
-						  	if(_throttle!==false){
-						  		return;
-						  	}
-						  	postMessage(post);
-						  	_throttle=setTimeout(function(){
-						  		_throttle=false;
-						  	},250);
-						  }
-
-						  var processProgress=function(d) {
-			
-							    if (d.done) {
-							    	postMessage({'progress':{loaded:charsReceived, total:0}});
-							    	return true;
-							    }
-
-							    charsReceived += d.value.length;
-							    throttlePost({'progress':{loaded:charsReceived, total:0}});
-							    return progress.read().then(processProgress);
-						  };
-
-
-						  var returnResponse=response.clone();
-
-						  (new Promise(function(resolve, reject){
-
-						  	 setTimeout(function(){
+			};
 
 
 
-								  _cache.put(e.data, response).then(function(){
-								  	
-								  }).catch(function(e_){
-								  	
-								  	console.error(e_);
-
-								  });
-
-								  progress=progressResponse.body.getReader();
-								  progress.read().then(processProgress).then(function(complete){
-
-								  	console.log('progress complete');
-
-								  }).catch(function(e_){
-								  	console.error(e_);
-								  });
-
-							}, 100);
+			var readXmlString = function(string) {
 
 
+				var xmlDom = new DOMParser().parseFromString(string);
+				if (!xmlDom) {
+					postMessage({
+						'error': 'Failed to parse xml'
+					});
+					return;
+				}
 
-						  }));
+				reader = new KmlReader(xmlDom);
+				loading = false;
+
+				var q = _queue.slice(0);
+				_queue = [];
+				q.forEach(handleMessage);
 
 
-						  return returnResponse;
+			}
 
-						 
-						 
+
+			var handleMessage = function(e) {
+
+
+				if ((!reader) && (!loading)) {
+					loading = true;
+					if (e.data.indexOf('<') != 0) {
+						//assume this is a url!
+
+
+						if (USE_CACHE && self.caches) {
+							caches.open(CACHE).then(function(cache) {
+								_cache = cache;
+								return cache.match(e.data);
+							}).then(function(response) {
+
+								if (typeof response === 'undefined') {
+									return fetch(e.data).then(function(response) {
+										if (!response.ok) {
+											throw new TypeError("bad response status");
+										}
+
+										var progressResponse = response.clone();
+										var progress = null
+										var charsReceived = 0;
+
+										var _throttle = false;
+										var throttlePost = function(post) {
+											if (_throttle !== false) {
+												return;
+											}
+											postMessage(post);
+											_throttle = setTimeout(function() {
+												_throttle = false;
+											}, 250);
+										}
+
+										var processProgress = function(d) {
+
+											if (d.done) {
+												postMessage({
+													'progress': {
+														loaded: charsReceived,
+														total: 0
+													}
+												});
+												return true;
+											}
+
+											charsReceived += d.value.length;
+											throttlePost({
+												'progress': {
+													loaded: charsReceived,
+													total: 0
+												}
+											});
+											return progress.read().then(processProgress);
+										};
+
+
+										var returnResponse = response.clone();
+
+										(new Promise(function(resolve, reject) {
+
+											setTimeout(function() {
+
+
+
+												_cache.put(e.data, response).then(function() {
+
+												}).catch(function(e_) {
+
+													console.error(e_);
+
+												});
+
+												progress = progressResponse.body.getReader();
+												progress.read().then(processProgress).then(function(complete) {
+
+													console.log('progress complete');
+
+												}).catch(function(e_) {
+													console.error(e_);
+												});
+
+											}, 100);
+
+
+
+										}));
+
+
+										return returnResponse;
+
+
+
+									});
+								}
+
+								return response;
+
+							}).then(function(response) {
+
+
+								return response.text();
+
+
+							}).then(function(text) {
+
+								readXmlString(text);
+
+							}).catch(function(e_) {
+
+								console.error(e_);
+								//xhttpRequest(e);
+
+							});
+							return;
+						}
+
+						xhttpRequest(e);
+
+						return;
+					}
+
+
+					readXmlString(e.data)
+
+					return;
+				}
+
+				if (loading) {
+
+					_queue.push(e);
+					return;
+				}
+
+				if (e.data === 'idle') {
+					callIdle = function() {
+						postMessage("idle");
+						callIdle = function() {};
+					};
+					reader.runOnceOnIdle(function() {
+						callIdle();
+					});
+					return;
+				}
+
+				if (e.data && e.data.sortDistanceFromCenter) {
+					reader.sortDistanceFromCenter(e.data.sortDistanceFromCenter);
+					return;
+				}
+
+
+				if (e.data === 'progress') {
+					reader.progress(function(data) {
+						postMessage({
+							'progress': data
 						});
-    				}
-    				
-    				return response;
-    				
-    			}).then(function(response){ 
+					});
+					return;
+				}
 
 
-    				return response.text();
+				if (typeof reader[e.data] == 'function') {
+					reader[e.data](function(data, total, index) {
+						postMessage({
+							method: e.data,
+							feature: data,
+							total: total,
+							index: index
+						});
 
+						// if (index == total - 1) {
+						//     postMessage({
+						//         method: e.data,
+						//         result: 'done'
+						//     });
+						// }
+					});
 
-    			}).then(function(text){
+				}
 
-    				 readXmlString(text);
+			}
 
-    			}).catch(function(e_){
-
-    				console.error(e_);
-    				//xhttpRequest(e);
-
-    			});
-    			return;
-    		}
-
-    		xhttpRequest(e);
-            
-            return;
-        }
-
-
-        readXmlString(e.data)
-        
-        return;
-    }
-
-    if(loading){
-
-    	_queue.push(e);
-    	return;
-    }
-
-    if(e.data==='idle'){
-    	callIdle=function(){
-    		 postMessage("idle");
-    		 callIdle=function(){};
-    	};
-    	reader.runOnceOnIdle(function(){
-    		callIdle();
-    	});
-    	return;
-    }
-
-    if(e.data&&e.data.sortDistanceFromCenter){
-    	reader.sortDistanceFromCenter(e.data.sortDistanceFromCenter);
-    	return;
-    }
-
-
-    if(e.data==='progress'){
-    	reader.progress(function(data) {
-            postMessage({
-                'progress':data
-            });
-        });
-    	return;
-    }
-
-
-    if (typeof reader[e.data] == 'function') {
-        reader[e.data](function(data, total, index) {
-            postMessage({
-                method: e.data,
-                feature: data,
-                total: total,
-                index: index
-            });
-
-            // if (index == total - 1) {
-            //     postMessage({
-            //         method: e.data,
-            //         result: 'done'
-            //     });
-            // }
-        });
-
-    }
-
-}
-
-onmessage=handleMessage
-
-
+			onmessage = handleMessage
 
 },{"@xmldom/xmldom":6}],2:[function(require,module,exports){
 'use strict'
