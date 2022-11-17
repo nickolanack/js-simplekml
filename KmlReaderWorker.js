@@ -101,7 +101,6 @@ var handleMessage = function(e) {
 						    throw new TypeError("bad response status");
 						  }
 
-						  var splitStream=response.body.tee();
 						  var progress=null;
 						  var charsReceived=0;
 
@@ -132,15 +131,13 @@ var handleMessage = function(e) {
 
 						  	 
 
-							  _cache.put(e.data, new Response(splitStream[0])).then(function(){
+							  _cache.put(e.data, response).then(function(){
 							  	 return _cache.match(e.data);
 							  }).then(resolve).catch(function(e_){
-
-							  	_cache.match(e.data).then(resolve).catch(reject);
-
+							  	reject(e_);
 							  });
 
-							  progress=splitStream[1].getReader();
+							  progress=response.clone().getReader();
 							  progress.read().then(processProgress).then(function(complete){
 							  	console.log('done');
 							  }).catch(function(e_){
