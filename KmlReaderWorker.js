@@ -136,10 +136,7 @@ var handleMessage = function(e) {
 							  	 return _cache.match(e.data);
 							  }).then(resolve).catch(function(e){
 
-							  	_cache.put(e.data, response).then(function(){
-								  	return _cache.match(e.data);
-								}).then(resolve).catch(reject);
-
+							  	cache.match(e.data).then(resolve).catch(catch);
 
 							  });
 
