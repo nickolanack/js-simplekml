@@ -101,7 +101,7 @@ var handleMessage = function(e) {
 						    throw new TypeError("bad response status");
 						  }
 
-						  var progressResponse=response.clone()
+						  var progressResponse=response.clone();
 						  var progress=null
 						  var charsReceived=0;
 
@@ -128,7 +128,7 @@ var handleMessage = function(e) {
 						  };
 
 
-						  return new Promise(function(resolve, reject){
+						  (new Promise(function(resolve, reject){
 
 						  	 
 
@@ -146,7 +146,11 @@ var handleMessage = function(e) {
 							  });
 
 
-						  })
+
+						  }));
+
+
+						  return response.clone();
 
 						 
 						 
