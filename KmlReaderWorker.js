@@ -128,29 +128,39 @@ var handleMessage = function(e) {
 						  };
 
 
+						  var returnResponse=response.clone();
+
 						  (new Promise(function(resolve, reject){
 
-						  	 
+						  	 setTimeout(function(){
 
-							  _cache.put(e.data, response).then(function(){
-							  	 return _cache.match(e.data);
-							  }).then(resolve).catch(function(e_){
-							  	reject(e_);
-							  });
 
-							  progress=progressResponse.body.getReader();
-							  progress.read().then(processProgress).then(function(complete){
-							  	console.log('done');
-							  }).catch(function(e_){
-							  	console.error(e_);
-							  });
+
+								  _cache.put(e.data, response).then(function(){
+								  	
+								  }).catch(function(e_){
+								  	
+								  	console.error(e_);
+
+								  });
+
+								  progress=progressResponse.body.getReader();
+								  progress.read().then(processProgress).then(function(complete){
+
+								  	console.log('progress complete');
+
+								  }).catch(function(e_){
+								  	console.error(e_);
+								  });
+
+							}, 100);
 
 
 
 						  }));
 
 
-						  return response.clone();
+						  return returnResponse;
 
 						 
 						 
