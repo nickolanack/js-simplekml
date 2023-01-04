@@ -1,6 +1,6 @@
 # js-simplekml
-A Javascript kml parser, for web or node.
-Includes web implementation for parsing kml files in the background using a Web Worker 
+A pure js kml parser, for web or node.
+Includes web implementation for parsing kml files in the background using a Web Worker
 
 ## Usage
 ```js
