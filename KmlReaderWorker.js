@@ -100,6 +100,11 @@ importScripts('KmlReader.js');
 								if (typeof response === 'undefined') {
 									return fetch(e.data).then(function(response) {
 										if (!response.ok) {
+											postMessage({
+												'error': {
+													error: "bad response status"
+												}
+											});
 											throw new TypeError("bad response status");
 										}
 
@@ -241,6 +246,10 @@ importScripts('KmlReader.js');
 							'progress': data
 						});
 					});
+					return;
+				}
+
+				if (e.data === 'error') {
 					return;
 				}
 

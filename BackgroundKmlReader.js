@@ -104,6 +104,11 @@ var BackgroundKmlReader = (function() {
 		return this;
 	};
 
+	BackgroundKmlReader.prototype.error = function(callback) {
+		this._execute('error', callback);
+		return this;
+	};
+
 
 
 	BackgroundKmlReader.prototype.sortDistanceFromCenter = function(center) {
