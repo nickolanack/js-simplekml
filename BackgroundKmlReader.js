@@ -32,7 +32,11 @@ var BackgroundKmlReader = (function() {
 
 			if(e.data.error){
 				console.error(e.data.error);
-				me._idle();
+				if(me._handlers['error']){
+					me._handlers['error'](e.data.error);
+				}else{
+					me._idle();
+				}
 				return;
 			}
 
